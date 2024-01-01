@@ -1,0 +1,91 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker compose reference guide at
+# https://docs.docker.com/compose/compose-file/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+services:
+  server:
+    build:
+      context: .
+    environment:
+      NODE_ENV: production
+    container_name: file-service
+    ports:
+      - "4000:4000"
+    networks:
+      - file_service
+
+    # The commented out section below is an example of how to define a PostgreSQL
+    # database that your application can use. `depends_on` tells Docker Compose to
+    # start the database before your application. The `db-data` volume persists the
+    # database data between container restarts. The `db-password` secret is used
+    # to set the database password. You must create `db/password.txt` and add
+    # a password of your choosing to it before running `docker-compose up`.
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+
+  mongo-file:
+    image: mongo
+    hostname: mongo
+    restart: always
+    container_name: mongo-file
+    ports:
+      - "27017:27017"
+    networks:
+      - file_service
+    volumes:
+      - mongo-file:/data/db
+    command: [ "--bind_ip", "0.0.0.0" ]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' mongo localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  minio:
+    image: "minio/minio"
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: minio server /data --console-address ":9001"
+    container_name: minio-file
+    env_file:
+      - .env.production
+    volumes:
+      - minio:/data
+    environment:
+      - MINIO_ROOT_USER=${MINIO_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
+    networks:
+      - file_service
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - .env.production
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RMQ_USERNAME}
+      - RABBITMQ_DEFAULT_PASS=${RMQ_PASSWORD}
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    networks:
+      - file_service
+
+volumes:
+  mongo-file:
+  minio:
+networks:
+  file_service:
+    driver: bridge
+
+
