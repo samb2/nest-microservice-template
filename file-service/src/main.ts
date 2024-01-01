@@ -16,7 +16,7 @@ import { HttpExceptionFilter } from './common/exceptions/httpExceptionFilter.exc
 import 'winston-daily-rotate-file';
 import { winstonLogger } from './common/logger/winston.module';
 
-// TODO role permission - unit test
+// TODO role permissio
 async function bootstrap(): Promise<void> {
   const app: INestApplication = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
