@@ -8,11 +8,15 @@ interface IPopulate {
 }
 
 interface IOption {
-  select?: string;
   sort?: object;
   limit?: number;
   skip?: number;
   populate?: [IPopulate] | string;
+  lean?: boolean;
+}
+
+interface IInsertManyOption {
+  ordered?: boolean;
   lean?: boolean;
 }
 
@@ -34,24 +38,28 @@ interface PaginationOptions {
 interface IRepository<T extends Document> {
   find(
     where: object,
+    projection: object,
     options: IOption,
     cache: ICache | undefined,
   ): Promise<T[]>;
 
   findOne(
     where: object,
+    projection: object,
     options: IOption,
     cache: ICache | undefined,
   ): Promise<T>;
 
   findById(
     id: Types.ObjectId,
+    projection: object,
     options: IOption,
     cache: ICache | undefined,
   ): Promise<T>;
 
   paginate(
     where: object,
+    projection: object,
     options: PaginationOptions,
     cache: ICache | undefined,
   ): Promise<T>;
@@ -72,7 +80,7 @@ interface IRepository<T extends Document> {
 
   insert(value: Partial<T>): Promise<T>;
 
-  insertMany(values: Partial<T>[]): Promise<T>;
+  insertMany(values: Partial<T>[], options: IInsertManyOption): Promise<T>;
 
   insertWithoutSave(value: Partial<T>): Promise<T>;
 }
@@ -83,39 +91,43 @@ export default class Repository<T extends Document> implements IRepository<T> {
   // Find
   async find(
     where: object,
+    projection: object = {},
     options: IOption = {},
     cache: ICache | undefined = undefined,
   ): Promise<any[]> {
     if (cache) {
-      return this.model.find(where, {}, options);
+      return this.model.find(where, projection, options);
     }
-    return this.model.find(where, {}, options).exec();
+    return this.model.find(where, projection, options).exec();
   }
 
   async findOne(
     where: object,
+    projection: object = {},
     options: IOption = {},
     cache: ICache | undefined = undefined,
   ): Promise<any> {
     if (cache) {
-      return this.model.findOne(where, {}, options);
+      return this.model.findOne(where, projection, options);
     }
-    return this.model.findOne(where, {}, options).exec();
+    return this.model.findOne(where, projection, options).exec();
   }
 
   async findById(
     id: Types.ObjectId,
+    projection: object = {},
     options: IOption = {},
     cache: ICache | undefined = undefined,
   ): Promise<any> {
     if (cache) {
-      return this.model.findById(id, {}, options);
+      return this.model.findById(id, projection, options);
     }
-    return this.model.findById(id, {}, options).exec();
+    return this.model.findById(id, projection, options).exec();
   }
 
   async paginate(
     where: object = {},
+    projection: object = {},
     options: PaginationOptions,
     cache: ICache | undefined = undefined,
   ): Promise<any> {
@@ -125,9 +137,11 @@ export default class Repository<T extends Document> implements IRepository<T> {
     const skip = (page - 1) * limit;
 
     if (cache) {
-      results = await this.model.find(where, {}, { ...options, skip });
+      results = await this.model.find(where, projection, { ...options, skip });
     } else {
-      results = await this.model.find(where, {}, { ...options, skip }).exec();
+      results = await this.model
+        .find(where, projection, { ...options, skip })
+        .exec();
     }
 
     const count: number = await this.model.countDocuments(where);
@@ -181,8 +195,11 @@ export default class Repository<T extends Document> implements IRepository<T> {
     return this.model.create(value);
   }
 
-  async insertMany(values: Partial<T>[]): Promise<any> {
-    return this.model.insertMany(values);
+  async insertMany(
+    values: Partial<T>[],
+    options: IInsertManyOption = {},
+  ): Promise<any> {
+    return this.model.insertMany(values, options);
   }
 
   async insertWithoutSave(value: Partial<T>): Promise<T> {

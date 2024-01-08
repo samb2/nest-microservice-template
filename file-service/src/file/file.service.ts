@@ -57,7 +57,8 @@ export class FileService {
     console.log(test_auth);
     return await this.fileRepo.find(
       {},
-      { select: 'name key path bucket', populate: 'bucket', lean: true },
+      { name: true, key: true, path: true, bucket: true },
+      { populate: 'bucket', lean: true },
     );
   }
 
@@ -73,11 +74,14 @@ export class FileService {
   }
 
   async _fileExists(id: any): Promise<File> {
-    const file: File = await this.fileRepo.findById(id, {
-      select: 'key name path bucket',
-      populate: 'bucket',
-      lean: true,
-    });
+    const file: File = await this.fileRepo.findById(
+      id,
+      { key: true, name: true, path: true, bucket: true },
+      {
+        populate: 'bucket',
+        lean: true,
+      },
+    );
     if (!file) {
       throw new NotFoundException('File not found');
     }
