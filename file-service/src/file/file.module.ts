@@ -21,6 +21,7 @@ import { Bucket, BucketSchema } from '../minio/schemas/bucket.schema';
         name: 'AUTH_SERVICE',
         transport: Transport.RMQ,
         options: {
+          //TODO change user and password
           urls: ['amqp://admin:master123@rabbitmq:5672'],
           queue: 'auth_queue',
           queueOptions: {

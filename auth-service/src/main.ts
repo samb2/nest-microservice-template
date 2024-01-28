@@ -70,7 +70,7 @@ async function bootstrap(): Promise<void> {
       ],
       queue: `${configService.get<string>('rabbitMq.auth_queue')}`,
       queueOptions: {
-        durable: false,
+        durable: true,
       },
       noAck: false,
     },

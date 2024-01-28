@@ -26,10 +26,13 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { IAuthServiceInterface } from './interfaces/IAuthService.interface';
+import { ClientProxy } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
   constructor(
+    @Inject('USER_SERVICE') private readonly userClient: ClientProxy,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     @InjectRepository(User)
@@ -40,19 +43,26 @@ export class AuthService implements IAuthServiceInterface {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  async sendToQueue(pattern: string, data: any): Promise<Observable<any>> {
+    return this.userClient.emit(pattern, data);
+  }
+
   public async register(registerDto: RegisterDto): Promise<RegisterResDto> {
     const { email, password } = registerDto;
     try {
       if (await this.userExists(email)) {
         throw new ConflictException('This user is already registered!');
       }
+
       const hashedPassword: string = await bcryptPassword(password);
+
       const user: User = this.userRepository.create({
         email,
         password: hashedPassword,
       });
-
       await this.userRepository.save(user);
+      // send to express with rabbitmq
+      await this.sendToQueue('user_created', user);
       return { message: 'Register Successfully' };
     } catch (e) {
       throw e;
