@@ -1,6 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { ResetPassword } from './reset-password.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -10,9 +9,14 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  @Exclude()
-  password: string;
+  @Column({ name: 'auth_id', unique: true })
+  authId: string;
+
+  @Column({ name: 'first_name', nullable: true })
+  firstName: string;
+
+  @Column({ name: 'last_name', nullable: true })
+  lastName: string;
 
   @Column({ name: 'is_active', default: true })
   @Exclude()
@@ -36,7 +40,4 @@ export class User {
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;
-
-  @OneToMany(() => ResetPassword, (resetPassword) => resetPassword.user)
-  resetPassword: ResetPassword[];
 }

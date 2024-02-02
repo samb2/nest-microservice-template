@@ -3,10 +3,11 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, QueryRunner, Repository } from 'typeorm';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RegisterDto } from './dto/register.dto';
@@ -26,8 +27,13 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { IAuthServiceInterface } from './interfaces/IAuthService.interface';
+import { MicroResInterface } from '../common/interfaces/micro-res.interface';
 import { ClientProxy } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
+import { PatternEnum } from '../common/enum/pattern.enum';
+import { MicroserviceMessageUtil } from '../common/utils/microservice-message.util';
+import { ServiceNameEnum } from '../common/enum/service-name.enum';
+import { createTransaction } from '../utils/create-transaction.util';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
@@ -41,14 +47,15 @@ export class AuthService implements IAuthServiceInterface {
     private readonly resetPasswordRep: Repository<ResetPassword>,
     private readonly dataSource: DataSource,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
-
-  async sendToQueue(pattern: string, data: any): Promise<Observable<any>> {
-    return this.userClient.emit(pattern, data);
+  ) {
+    this.userClient.connect().then();
   }
 
   public async register(registerDto: RegisterDto): Promise<RegisterResDto> {
     const { email, password } = registerDto;
+    const queryRunner: QueryRunner = await createTransaction(this.dataSource);
+    const userRepository: Repository<User> =
+      queryRunner.manager.getRepository(User);
     try {
       if (await this.userExists(email)) {
         throw new ConflictException('This user is already registered!');
@@ -56,16 +63,33 @@ export class AuthService implements IAuthServiceInterface {
 
       const hashedPassword: string = await bcryptPassword(password);
 
-      const user: User = this.userRepository.create({
+      const user: User = userRepository.create({
         email,
         password: hashedPassword,
       });
-      await this.userRepository.save(user);
-      // send to express with rabbitmq
-      await this.sendToQueue('user_created', user);
+      await userRepository.save(user);
+
+      const payload = {
+        authId: user.id,
+        email: user.email,
+      };
+      const message: MicroResInterface =
+        MicroserviceMessageUtil.generateMessage(ServiceNameEnum.USER, payload);
+
+      const result: MicroResInterface = await firstValueFrom(
+        this.userClient.send(PatternEnum.USER_CREATED, message),
+      );
+
+      if (result.error) {
+        throw new InternalServerErrorException(result.reason.message);
+      }
+      await queryRunner.commitTransaction();
       return { message: 'Register Successfully' };
     } catch (e) {
+      await queryRunner.rollbackTransaction();
       throw e;
+    } finally {
+      await queryRunner.release();
     }
   }
 

@@ -1,100 +1,28 @@
-import { Document, Model, Types } from 'mongoose';
-
-interface IPopulate {
-  path: string;
-  model: string;
-  select?: [] | string;
-  populate?: IPopulate;
-}
-
-interface IOption {
-  sort?: object;
-  limit?: number;
-  skip?: number;
-  populate?: [IPopulate] | string;
-  lean?: boolean;
-}
-
-interface IInsertManyOption {
-  ordered?: boolean;
-  lean?: boolean;
-}
-
-interface ICache {
-  cacheKey?: string;
-  ttl?: number;
-  multitenantValue?: string;
-}
-
-interface PaginationOptions {
-  select?: string;
-  sort?: object;
-  limit: number;
-  page: number;
-  populate?: [IPopulate] | string;
-  lean?: boolean;
-}
-
-interface IRepository<T extends Document> {
-  find(
-    where: object,
-    projection: object,
-    options: IOption,
-    cache: ICache | undefined,
-  ): Promise<T[]>;
-
-  findOne(
-    where: object,
-    projection: object,
-    options: IOption,
-    cache: ICache | undefined,
-  ): Promise<T>;
-
-  findById(
-    id: Types.ObjectId,
-    projection: object,
-    options: IOption,
-    cache: ICache | undefined,
-  ): Promise<T>;
-
-  paginate(
-    where: object,
-    projection: object,
-    options: PaginationOptions,
-    cache: ICache | undefined,
-  ): Promise<T>;
-
-  update(where: object, update: Partial<T>): Promise<T>;
-
-  updateMany(where: object, update: Partial<T>): Promise<T>;
-
-  findByIdAndUpdate(id: Types.ObjectId, update: Partial<T>): Promise<T>;
-
-  findOneAndUpdate(where: object, update: Partial<T>): Promise<T>;
-
-  deleteMany(where: object): Promise<T>;
-
-  findByIdAndDelete(id: Types.ObjectId): Promise<T>;
-
-  findOneAndDelete(where: object): Promise<T>;
-
-  insert(value: Partial<T>): Promise<T>;
-
-  insertMany(values: Partial<T>[], options: IInsertManyOption): Promise<T>;
-
-  insertWithoutSave(value: Partial<T>): Promise<T>;
-}
+import {
+  Document,
+  FilterQuery,
+  InsertManyOptions,
+  Model,
+  ProjectionType,
+  QueryOptions,
+  Types,
+  UpdateQuery,
+  UpdateWithAggregationPipeline,
+} from 'mongoose';
+import { ICache } from './interfaces/cache.interface';
+import { PaginationOptions } from './interfaces/pagination.interface';
+import { IRepository } from './interfaces/repository.interface';
 
 export default class Repository<T extends Document> implements IRepository<T> {
   constructor(private readonly model: Model<T>) {}
 
   // Find
   async find(
-    where: object,
-    projection: object = {},
-    options: IOption = {},
+    where: FilterQuery<T>,
+    projection?: ProjectionType<T> | null | undefined,
+    options?: QueryOptions<T> | null | undefined,
     cache: ICache | undefined = undefined,
-  ): Promise<any[]> {
+  ): Promise<T[]> {
     if (cache) {
       return this.model.find(where, projection, options);
     }
@@ -102,11 +30,11 @@ export default class Repository<T extends Document> implements IRepository<T> {
   }
 
   async findOne(
-    where: object,
-    projection: object = {},
-    options: IOption = {},
+    where?: FilterQuery<T>,
+    projection?: ProjectionType<T> | null,
+    options?: QueryOptions<T> | null,
     cache: ICache | undefined = undefined,
-  ): Promise<any> {
+  ): Promise<T> {
     if (cache) {
       return this.model.findOne(where, projection, options);
     }
@@ -115,8 +43,8 @@ export default class Repository<T extends Document> implements IRepository<T> {
 
   async findById(
     id: Types.ObjectId,
-    projection: object = {},
-    options: IOption = {},
+    projection?: ProjectionType<T> | null,
+    options?: QueryOptions<T> | null,
     cache: ICache | undefined = undefined,
   ): Promise<any> {
     if (cache) {
@@ -126,13 +54,13 @@ export default class Repository<T extends Document> implements IRepository<T> {
   }
 
   async paginate(
-    where: object = {},
-    projection: object = {},
-    options: PaginationOptions,
+    where?: FilterQuery<T>,
+    projection?: ProjectionType<T> | null,
+    options?: PaginationOptions,
     cache: ICache | undefined = undefined,
   ): Promise<any> {
     const { limit, page } = options;
-    let results;
+    let results: any;
 
     const skip = (page - 1) * limit;
 
@@ -158,36 +86,60 @@ export default class Repository<T extends Document> implements IRepository<T> {
   }
 
   // Update
-  async update(where: object, update: Partial<T>): Promise<any> {
-    return this.model.updateOne(where, update);
+  async update(
+    where?: FilterQuery<T>,
+    update?: UpdateQuery<T> | UpdateWithAggregationPipeline,
+    options?: QueryOptions<T> | null,
+  ): Promise<any> {
+    return this.model.updateOne(where, update, options);
   }
 
-  async updateMany(where: object, update: Partial<T>): Promise<any> {
-    return this.model.updateMany(where, update);
+  async updateMany(
+    where?: FilterQuery<T>,
+    update?: UpdateQuery<T> | UpdateWithAggregationPipeline,
+    options?: QueryOptions<T> | null,
+  ): Promise<any> {
+    return this.model.updateMany(where, update, options);
   }
 
   async findByIdAndUpdate(
-    id: Types.ObjectId,
-    update: Partial<T>,
-  ): Promise<any> {
-    return this.model.findByIdAndUpdate(id, update);
+    id?: Types.ObjectId | any,
+    update?: UpdateQuery<T>,
+    options?: QueryOptions<T> | null,
+  ): Promise<Model<T>> {
+    return this.model.findByIdAndUpdate(id, update, options);
   }
 
-  async findOneAndUpdate(where: object, update: Partial<T>): Promise<any> {
-    return this.model.findOneAndUpdate(where, update);
+  async findOneAndUpdate(
+    where?: FilterQuery<T>,
+    update?: UpdateQuery<T>,
+    options?: QueryOptions<T> | null,
+  ): Promise<Model<T>> {
+    return this.model.findOneAndUpdate(where, update, options);
   }
 
   // Delete
-  async deleteMany(where: object): Promise<any> {
-    return this.model.deleteMany(where);
+  async deleteMany(
+    where?: FilterQuery<T>,
+    options?: QueryOptions<T>,
+  ): Promise<any> {
+    return this.model.deleteMany(where, options);
   }
 
-  async findByIdAndDelete(id: Types.ObjectId): Promise<any> {
-    return this.model.findByIdAndDelete(id);
+  async findByIdAndDelete(
+    id: Types.ObjectId,
+    options?: QueryOptions<T> & {
+      includeResultMetadata: true;
+    },
+  ): Promise<any> {
+    return this.model.findByIdAndDelete(id, options);
   }
 
-  async findOneAndDelete(where: object): Promise<any> {
-    return this.model.findOneAndDelete(where);
+  async findOneAndDelete(
+    where?: FilterQuery<T> | null,
+    options?: QueryOptions<T> | null,
+  ): Promise<any> {
+    return this.model.findOneAndDelete(where, options);
   }
 
   // Insert
@@ -197,7 +149,7 @@ export default class Repository<T extends Document> implements IRepository<T> {
 
   async insertMany(
     values: Partial<T>[],
-    options: IInsertManyOption = {},
+    options: InsertManyOptions & { lean: true },
   ): Promise<any> {
     return this.model.insertMany(values, options);
   }

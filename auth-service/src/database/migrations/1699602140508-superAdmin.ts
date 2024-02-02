@@ -9,8 +9,6 @@ export class SuperAdmin1699602140508 implements MigrationInterface {
       password: await bcryptPassword('12345678'),
       admin: true,
       superAdmin: true,
-      firstName: 'admin',
-      lastName: 'admin',
     });
     await queryRunner.manager.getRepository(User).save(user);
   }
