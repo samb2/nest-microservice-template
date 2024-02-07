@@ -33,7 +33,7 @@ import { PatternEnum } from '../common/enum/pattern.enum';
 import { MicroserviceMessageUtil } from '../common/utils/microservice-message.util';
 import { ServiceNameEnum } from '../common/enum/service-name.enum';
 import { createTransaction } from '../utils/create-transaction.util';
-import { JwtRefreshPayload } from './interfaces/jwt-refresh-payload.interface';
+import { JwtRefreshPayload } from '../common/interfaces/jwt-refresh-payload.interface';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
