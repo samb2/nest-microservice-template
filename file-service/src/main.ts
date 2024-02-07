@@ -16,7 +16,7 @@ import { HttpExceptionFilter } from './common/exceptions/httpExceptionFilter.exc
 import 'winston-daily-rotate-file';
 import { winstonLogger } from './common/logger/winston.module';
 
-// TODO role permissio
+// TODO role permission
 async function bootstrap(): Promise<void> {
   const app: INestApplication = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
@@ -60,7 +60,6 @@ async function bootstrap(): Promise<void> {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      //urls: ['amqp://admin:master123@rabbitmq:5672'],
       urls: [
         `amqp://${configService.get<string>(
           'rabbitMq.username',

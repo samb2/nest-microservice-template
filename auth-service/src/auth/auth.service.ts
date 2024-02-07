@@ -16,7 +16,6 @@ import { LoginDto } from './dto/login.dto';
 import { LoginResDto } from './dto/response/loginRes.dto';
 import { TokenTypeEnum } from './enum/token-type.enum';
 import { bcryptPassword, comparePassword } from '../utils/password.util';
-import { JwtRefreshPayload } from '../common/passport/refreshToken.strategy';
 import { ForgotPasswordResDto } from './dto/response/forgotPasswordRes.dto';
 import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { User } from './entities/user.entity';
@@ -34,6 +33,7 @@ import { PatternEnum } from '../common/enum/pattern.enum';
 import { MicroserviceMessageUtil } from '../common/utils/microservice-message.util';
 import { ServiceNameEnum } from '../common/enum/service-name.enum';
 import { createTransaction } from '../utils/create-transaction.util';
+import { JwtRefreshPayload } from './interfaces/jwt-refresh-payload.interface';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
@@ -106,7 +106,7 @@ export class AuthService implements IAuthServiceInterface {
         throw new ForbiddenException('your account is not active!');
       }
       // Generate Tokens
-      const payload: JwtRefreshPayload = { email };
+      const payload: JwtRefreshPayload = { authId: user.id };
       const refresh_token: string = this.generateToken(
         payload,
         TokenTypeEnum.REFRESH,
@@ -116,7 +116,7 @@ export class AuthService implements IAuthServiceInterface {
         TokenTypeEnum.ACCESS,
       );
       // Save Refresh Token In Cache
-      await this.cacheManager.set(user.email, refresh_token);
+      await this.cacheManager.set(user.id, refresh_token);
 
       return { user, access_token, refresh_token };
     } catch (e) {
@@ -133,7 +133,7 @@ export class AuthService implements IAuthServiceInterface {
       if (user && user.isActive) {
         const resetPassword: ResetPassword = this.resetPasswordRep.create({
           user: user,
-          token: this.generateToken({ email }, TokenTypeEnum.EMAIL),
+          token: this.generateToken({ authId: user.id }, TokenTypeEnum.EMAIL),
         });
 
         await this.resetPasswordRep.save(resetPassword);
@@ -215,12 +215,17 @@ export class AuthService implements IAuthServiceInterface {
     }
   }
 
-  public refresh(email: string): RefreshResDto {
-    const access_token: string = this.generateToken(
-      { email },
-      TokenTypeEnum.ACCESS,
-    );
-    return { access_token };
+  public refresh(authId: string): RefreshResDto {
+    try {
+      const payload: JwtRefreshPayload = { authId };
+      const access_token: string = this.generateToken(
+        payload,
+        TokenTypeEnum.ACCESS,
+      );
+      return { access_token };
+    } catch (e) {
+      throw e;
+    }
   }
 
   public async logout(user: User): Promise<object> {
@@ -243,7 +248,16 @@ export class AuthService implements IAuthServiceInterface {
     });
   }
 
-  public generateToken(payload: object, type: TokenTypeEnum): string {
+  public async validateUserByAuthId(id: string): Promise<User | undefined> {
+    return this.userRepository.findOne({
+      where: { id, isDelete: false },
+    });
+  }
+
+  public generateToken(
+    payload: JwtRefreshPayload,
+    type: TokenTypeEnum,
+  ): string {
     let secretKey: string;
     switch (type) {
       case TokenTypeEnum.ACCESS:

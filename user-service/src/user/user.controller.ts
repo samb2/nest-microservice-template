@@ -1,4 +1,13 @@
-import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
@@ -9,6 +18,8 @@ import {
 } from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PatternEnum } from '../common/enum/pattern.enum';
+import { AccessTokenGuard } from '../utils/passport/jwt-access.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('user')
 export class UserController {
@@ -19,8 +30,11 @@ export class UserController {
     return this.userService.create(createUserDto, context);
   }
 
+  @UseGuards(AccessTokenGuard)
   @Get()
-  findAll() {
+  @ApiBearerAuth()
+  findAll(@Req() req: any) {
+    console.log(req.user);
     return this.userService.findAll();
   }
 

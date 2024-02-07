@@ -25,21 +25,15 @@ import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { ForgotPasswordResDto } from './dto/response/forgotPasswordRes.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ResetPasswordResDto } from './dto/response/resetPasswordRes.dto';
-import { AccessTokenGuard } from '../common/passport/jwt-access.guard';
-import { RefreshTokenGuard } from '../common/passport/jwt-refresh.guard';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { RefreshTokenGuard } from '../utils/passport/jwt-refresh.guard';
+import { AccessTokenGuard } from '../utils/passport/jwt-access.guard';
 
 @ApiTags('auth service')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @MessagePattern('test_auth')
-  public async getUserById(@Payload() data: string): Promise<any> {
-    return 'I connect to Auth Service!';
-  }
 
   @Post('register')
   @HttpCode(201)
@@ -92,7 +86,7 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiOkResponseSuccess(RefreshResDto, 200)
   refresh(@Req() req: any): RefreshResDto {
-    return this.authService.refresh(req.email);
+    return this.authService.refresh(req.user);
   }
 
   @UseGuards(AccessTokenGuard)

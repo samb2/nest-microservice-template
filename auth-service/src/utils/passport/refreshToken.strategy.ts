@@ -2,15 +2,9 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthService } from '../../auth/auth.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-
-export interface JwtRefreshPayload {
-  email: string;
-  iat?: number;
-  exp?: number;
-}
+import { JwtRefreshPayload } from '../../auth/interfaces/jwt-refresh-payload.interface';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -19,7 +13,6 @@ export class RefreshTokenStrategy extends PassportStrategy(
 ) {
   constructor(
     private configService: ConfigService,
-    private authService: AuthService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super({
@@ -33,10 +26,10 @@ export class RefreshTokenStrategy extends PassportStrategy(
   async validate(req: any, payload: JwtRefreshPayload): Promise<any> {
     // get refresh token
     const token = req.headers.authorization.split(' ')[1];
-    const redisRefreshToken = await this.cacheManager.get(payload.email);
+    const redisRefreshToken = await this.cacheManager.get(payload.authId);
+    console.log(redisRefreshToken);
     if (token === redisRefreshToken) {
-      req.email = payload.email;
-      return payload.email;
+      return payload.authId;
     }
     throw new UnauthorizedException();
   }

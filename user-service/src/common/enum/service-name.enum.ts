@@ -1,5 +1,5 @@
 export enum ServiceNameEnum {
-  USER = 'USER-SERVICE',
-  AUTH = 'AUTH-SERVICE',
-  FILE = 'FILE-SERVICE',
+  USER = 'USER_SERVICE',
+  AUTH = 'AUTH_SERVICE',
+  FILE = 'FILE_SERVICE',
 }

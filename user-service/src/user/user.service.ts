@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RmqContext } from '@nestjs/microservices';
 import { UserRepository } from './repository/user.repository';
 import { MicroserviceMessageUtil } from '../common/utils/microservice-message.util';
 import { ServiceNameEnum } from '../common/enum/service-name.enum';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -54,5 +55,13 @@ export class UserService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async validateUserByAuthId(authId: string): Promise<User> {
+    const user = await this.userRepository.findOneBy({ authId });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }
