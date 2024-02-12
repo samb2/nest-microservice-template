@@ -3,7 +3,7 @@ import { ServiceNameEnum } from '../enum/service-name.enum';
 export interface MicroResInterface {
   error?: boolean;
   reason?: Reason;
-  data?: string;
+  data?: any;
   from: ServiceNameEnum;
   to: ServiceNameEnum;
 }

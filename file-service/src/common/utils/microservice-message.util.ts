@@ -2,7 +2,7 @@ import { ServiceNameEnum } from '../enum/service-name.enum';
 import { MicroResInterface, Reason } from '../interfaces/micro-res.interface';
 
 export class MicroserviceMessageUtil {
-  private static from: ServiceNameEnum = ServiceNameEnum.USER;
+  private static from: ServiceNameEnum = ServiceNameEnum.FILE;
 
   public static generateMessage(
     to: ServiceNameEnum,

@@ -1,32 +1,42 @@
-import { ExtractJwt, Strategy } from "passport-jwt";
-import { PassportStrategy } from "@nestjs/passport";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { JwtAccessPayload } from "../../common/interfaces/jwt-access-payload.interface";
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { PassportStrategy } from '@nestjs/passport';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtAccessPayload } from '../../common/interfaces/jwt-access-payload.interface';
+import { ServiceNameEnum } from '../../common/enum/service-name.enum';
+import { ClientProxy } from '@nestjs/microservices';
+import { MicroResInterface } from '../../common/interfaces/micro-res.interface';
+import { firstValueFrom } from 'rxjs';
+import { MicroserviceMessageUtil } from '../../common/utils/microservice-message.util';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(
   Strategy,
-  "jwt-access"
+  'jwt-access',
 ) {
   constructor(
     private configService: ConfigService,
-    private authService: AuthService
+    @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get("jwt.access_key")
+      secretOrKey: configService.get('jwt.access_key'),
     });
   }
 
-  async validate(payload: JwtAccessPayload): Promise<User> {
-    const user: User = await this.authService.validateUserByAuthId(
-      payload.authId
+  async validate(payload: JwtAccessPayload): Promise<any> {
+    const message: MicroResInterface = MicroserviceMessageUtil.generateMessage(
+      ServiceNameEnum.AUTH,
+      { authId: payload.authId },
     );
-    if (!user) {
-      throw new UnauthorizedException();
+    // todo add enum for pattern
+    const result: MicroResInterface = await firstValueFrom(
+      this.authClient.send('auth_verify_token', message),
+    );
+    if (result.error) {
+      throw new UnauthorizedException(result.reason.message);
     }
-    return user;
+    return result.data;
   }
 }

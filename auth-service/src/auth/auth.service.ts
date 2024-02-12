@@ -254,6 +254,34 @@ export class AuthService implements IAuthServiceInterface {
     });
   }
 
+  public async verifyToken(
+    payload: MicroResInterface,
+  ): Promise<MicroResInterface> {
+    try {
+      const user: User = await this.validateUserByAuthId(payload.data.authId);
+      if (!user) {
+        return MicroserviceMessageUtil.generateResMessage(
+          payload.from,
+          null,
+          true,
+          { message: 'User Not Found', status: 404 },
+        );
+      }
+      return MicroserviceMessageUtil.generateResMessage(
+        payload.from,
+        user.id,
+        false,
+      );
+    } catch (e) {
+      return MicroserviceMessageUtil.generateResMessage(
+        payload.from,
+        null,
+        true,
+        { message: e.message, status: 500 },
+      );
+    }
+  }
+
   public generateToken(
     payload: JwtRefreshPayload,
     type: TokenTypeEnum,

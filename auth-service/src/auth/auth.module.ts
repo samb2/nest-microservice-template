@@ -10,24 +10,36 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccessTokenStrategy } from '../utils/passport/accessToken.strategy';
 import { RefreshTokenStrategy } from '../utils/passport/refreshToken.strategy';
 import { ServiceNameEnum } from '../common/enum/service-name.enum';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, ResetPassword]),
     PassportModule.register({ defaultStrategy: 'jwt-access' }),
     JwtModule.register({}),
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: ServiceNameEnum.USER,
-        transport: Transport.RMQ,
-        options: {
-          //TODO change user and password
-          urls: ['amqp://admin:master123@localhost:5672'],
-          queue: 'user_queue',
-          queueOptions: {
-            durable: true,
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [
+              `amqp://${configService.get<string>(
+                'rabbitMq.username',
+              )}:${configService.get<string>(
+                'rabbitMq.password',
+              )}@${configService.get<string>(
+                'rabbitMq.host',
+              )}:${configService.get<string>('rabbitMq.port')}`,
+            ],
+            queue: `${configService.get<string>('rabbitMq.user_queue')}`,
+            queueOptions: {
+              durable: true,
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

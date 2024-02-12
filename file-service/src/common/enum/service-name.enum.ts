@@ -3,4 +3,3 @@ export enum ServiceNameEnum {
   AUTH = 'AUTH_SERVICE',
   FILE = 'FILE_SERVICE',
 }
-

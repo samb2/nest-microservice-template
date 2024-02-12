@@ -8,6 +8,8 @@ import { File, FileSchema } from './schemas/file.schema';
 import { FileRepository } from './file.repository';
 import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket, BucketSchema } from '../minio/schemas/bucket.schema';
+import { ServiceNameEnum } from '../common/enum/service-name.enum';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -16,18 +18,29 @@ import { Bucket, BucketSchema } from '../minio/schemas/bucket.schema';
       { name: Bucket.name, schema: BucketSchema },
     ]),
     MinioModule,
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
-        name: 'AUTH_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          //TODO change user and password
-          urls: ['amqp://admin:master123@rabbitmq:5672'],
-          queue: 'auth_queue',
-          queueOptions: {
-            durable: false,
+        name: ServiceNameEnum.AUTH,
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [
+              `amqp://${configService.get<string>(
+                'rabbitMq.username',
+              )}:${configService.get<string>(
+                'rabbitMq.password',
+              )}@${configService.get<string>(
+                'rabbitMq.host',
+              )}:${configService.get<string>('rabbitMq.port')}`,
+            ],
+            queue: `${configService.get<string>('rabbitMq.auth_queue')}`,
+            queueOptions: {
+              durable: true,
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

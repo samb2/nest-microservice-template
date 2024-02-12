@@ -3,7 +3,6 @@ import { v4 as uuidV4 } from 'uuid';
 import * as path from 'path';
 import { MinioService } from '../minio/minio.service';
 import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
 import { FileRepository } from './file.repository';
 import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket } from '../minio/schemas/bucket.schema';
@@ -16,9 +15,11 @@ export class FileService {
     @Inject(MinioService) private readonly minioService: MinioService,
     private readonly fileRepo: FileRepository,
     private readonly bucketRepo: BucketRepository,
-  ) {}
+  ) {
+    this.authClient.connect().then();
+  }
 
-  async upload(image: any): Promise<File> {
+  async upload(image: any, userId: string): Promise<File> {
     const metaData: object = {
       'content-type': image.mimetype,
     };
@@ -46,19 +47,16 @@ export class FileService {
       key: bucketKey,
       size: image.size,
       mimeType: image.mimetype,
+      uploadedBy: userId,
       path: `${bucket.name}/${bucketKey}`,
     });
   }
 
   async findAll(): Promise<File[]> {
-    const test_auth = await firstValueFrom(
-      this.authClient.send('test_auth', {}),
-    );
-    console.log(test_auth);
     return await this.fileRepo.find(
       {},
-      { name: true, key: true, path: true, bucket: true },
-      { populate: 'bucket', lean: true },
+      { name: true, key: true, path: true, bucket: true, uploadedBy: true },
+      { populate: 'bucket' },
     );
   }
 

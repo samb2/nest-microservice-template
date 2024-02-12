@@ -1,7 +1,22 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 
-@Schema({ toJSON: { versionKey: false }, toObject: { versionKey: false } })
+@Schema({
+  toJSON: {
+    versionKey: false,
+    transform(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+    },
+  },
+  toObject: {
+    versionKey: false,
+    transform(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+    },
+  },
+})
 export class File extends Document {
   @Prop()
   name: string;
@@ -22,6 +37,9 @@ export class File extends Document {
 
   @Prop()
   path: string;
+
+  @Prop()
+  uploadedBy: string;
 
   @Prop({ default: Date.now })
   uploadedAt: Date;

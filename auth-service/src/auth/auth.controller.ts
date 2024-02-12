@@ -29,6 +29,8 @@ import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { RefreshTokenGuard } from '../utils/passport/jwt-refresh.guard';
 import { AccessTokenGuard } from '../utils/passport/jwt-access.guard';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { MicroResInterface } from '../common/interfaces/micro-res.interface';
 
 @ApiTags('auth service')
 @Controller('auth')
@@ -96,5 +98,12 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async logout(@Req() req: any): Promise<object> {
     return this.authService.logout(req.user);
+  }
+
+  @MessagePattern('auth_verify_token')
+  public async getUserById(
+    @Payload() payload: MicroResInterface,
+  ): Promise<any> {
+    return this.authService.verifyToken(payload);
   }
 }

@@ -10,6 +10,11 @@ import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { FileModule } from './file/file.module';
 import { MinioModule } from './minio/minio.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ServiceNameEnum } from './common/enum/service-name.enum';
 
 @Module({
   imports: [
@@ -21,6 +26,33 @@ import { MinioModule } from './minio/minio.module';
     }),
     TerminusModule,
     DatabaseModule,
+    PassportModule.register({ defaultStrategy: 'jwt-access' }),
+    JwtModule.register({}),
+    ClientsModule.registerAsync([
+      {
+        name: ServiceNameEnum.AUTH,
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [
+              `amqp://${configService.get<string>(
+                'rabbitMq.username',
+              )}:${configService.get<string>(
+                'rabbitMq.password',
+              )}@${configService.get<string>(
+                'rabbitMq.host',
+              )}:${configService.get<string>('rabbitMq.port')}`,
+            ],
+            queue: `${configService.get<string>('rabbitMq.auth_queue')}`,
+            queueOptions: {
+              durable: true,
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -40,6 +72,7 @@ import { MinioModule } from './minio/minio.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    AccessTokenStrategy,
   ],
 })
 export class AppModule implements NestModule {
