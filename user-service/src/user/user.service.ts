@@ -1,11 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { RmqContext } from '@nestjs/microservices';
 import { UserRepository } from './repository/user.repository';
-import { MicroserviceMessageUtil } from '../common/utils/microservice-message.util';
 import { ServiceNameEnum } from '../common/enum/service-name.enum';
 import { User } from './entities/user.entity';
+import { generateResMessage } from '../common/utils/microservice-message.util';
 
 @Injectable()
 export class UserService {
@@ -22,14 +21,16 @@ export class UserService {
 
       await this.userRepository.save(user);
       channel.ack(originalMsg);
-      return MicroserviceMessageUtil.generateResMessage(
+      return generateResMessage(
+        ServiceNameEnum.USER,
         ServiceNameEnum.AUTH,
         'user created',
         false,
       );
     } catch (e) {
       await channel.reject(originalMsg, false);
-      return MicroserviceMessageUtil.generateResMessage(
+      return generateResMessage(
+        ServiceNameEnum.USER,
         ServiceNameEnum.AUTH,
         null,
         true,
@@ -49,9 +50,9 @@ export class UserService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  // update(id: number, updateUserDto: UpdateUserDto) {
+  //   return `This action updates a #${id} user`;
+  // }
 
   remove(id: number) {
     return `This action removes a #${id} user`;

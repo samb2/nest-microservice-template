@@ -29,8 +29,14 @@ import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { RefreshTokenGuard } from '../utils/passport/jwt-refresh.guard';
 import { AccessTokenGuard } from '../utils/passport/jwt-access.guard';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+  Ctx,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { MicroResInterface } from '../common/interfaces/micro-res.interface';
+import { PatternEnum } from '../common/enum/pattern.enum';
 
 @ApiTags('auth service')
 @Controller('auth')
@@ -100,10 +106,11 @@ export class AuthController {
     return this.authService.logout(req.user);
   }
 
-  @MessagePattern('auth_verify_token')
+  @MessagePattern(PatternEnum.AUTH_VERIFY_TOKEN)
   public async getUserById(
     @Payload() payload: MicroResInterface,
+    @Ctx() context: RmqContext,
   ): Promise<any> {
-    return this.authService.verifyToken(payload);
+    return this.authService.verifyToken(payload, context);
   }
 }

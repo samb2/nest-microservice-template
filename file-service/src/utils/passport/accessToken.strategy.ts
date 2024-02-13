@@ -5,9 +5,15 @@ import { ConfigService } from '@nestjs/config';
 import { JwtAccessPayload } from '../../common/interfaces/jwt-access-payload.interface';
 import { ServiceNameEnum } from '../../common/enum/service-name.enum';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroResInterface } from '../../common/interfaces/micro-res.interface';
-import { firstValueFrom } from 'rxjs';
-import { MicroserviceMessageUtil } from '../../common/utils/microservice-message.util';
+import {
+  MicroResInterface,
+  MicroSendInterface,
+} from '../../common/interfaces/micro-res.interface';
+import {
+  generateMessage,
+  sendMicroMessage,
+} from '../../common/utils/microservice-message.util';
+import { PatternEnum } from '../../common/enum/pattern.enum';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(
@@ -26,13 +32,18 @@ export class AccessTokenStrategy extends PassportStrategy(
   }
 
   async validate(payload: JwtAccessPayload): Promise<any> {
-    const message: MicroResInterface = MicroserviceMessageUtil.generateMessage(
+    const message: MicroSendInterface = generateMessage(
+      ServiceNameEnum.FILE,
       ServiceNameEnum.AUTH,
-      { authId: payload.authId },
+      {
+        authId: payload.authId,
+      },
     );
     // todo add enum for pattern
-    const result: MicroResInterface = await firstValueFrom(
-      this.authClient.send('auth_verify_token', message),
+    const result: MicroResInterface = await sendMicroMessage(
+      this.authClient,
+      PatternEnum.AUTH_VERIFY_TOKEN,
+      message,
     );
     if (result.error) {
       throw new UnauthorizedException(result.reason.message);

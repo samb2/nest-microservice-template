@@ -26,14 +26,20 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { IAuthServiceInterface } from './interfaces/IAuthService.interface';
-import { MicroResInterface } from '../common/interfaces/micro-res.interface';
-import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import {
+  MicroResInterface,
+  MicroSendInterface,
+} from '../common/interfaces/micro-res.interface';
+import { ClientProxy, RmqContext } from '@nestjs/microservices';
 import { PatternEnum } from '../common/enum/pattern.enum';
-import { MicroserviceMessageUtil } from '../common/utils/microservice-message.util';
 import { ServiceNameEnum } from '../common/enum/service-name.enum';
 import { createTransaction } from '../utils/create-transaction.util';
 import { JwtRefreshPayload } from '../common/interfaces/jwt-refresh-payload.interface';
+import {
+  generateMessage,
+  generateResMessage,
+  sendMicroMessage,
+} from '../common/utils/microservice-message.util';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
@@ -73,11 +79,16 @@ export class AuthService implements IAuthServiceInterface {
         authId: user.id,
         email: user.email,
       };
-      const message: MicroResInterface =
-        MicroserviceMessageUtil.generateMessage(ServiceNameEnum.USER, payload);
+      const message: MicroSendInterface = generateMessage(
+        ServiceNameEnum.AUTH,
+        ServiceNameEnum.USER,
+        payload,
+      );
 
-      const result: MicroResInterface = await firstValueFrom(
-        this.userClient.send(PatternEnum.USER_CREATED, message),
+      const result: MicroResInterface = await sendMicroMessage(
+        this.userClient,
+        PatternEnum.USER_REGISTERED,
+        message,
       );
 
       if (result.error) {
@@ -256,29 +267,26 @@ export class AuthService implements IAuthServiceInterface {
 
   public async verifyToken(
     payload: MicroResInterface,
+    context: RmqContext,
   ): Promise<MicroResInterface> {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
     try {
       const user: User = await this.validateUserByAuthId(payload.data.authId);
       if (!user) {
-        return MicroserviceMessageUtil.generateResMessage(
-          payload.from,
-          null,
-          true,
-          { message: 'User Not Found', status: 404 },
-        );
+        return generateResMessage(payload.from, payload.to, null, true, {
+          message: 'User Not Found',
+          status: 404,
+        });
       }
-      return MicroserviceMessageUtil.generateResMessage(
-        payload.from,
-        user.id,
-        false,
-      );
+      channel.ack(originalMsg);
+      return generateResMessage(payload.from, payload.to, user.id, false);
     } catch (e) {
-      return MicroserviceMessageUtil.generateResMessage(
-        payload.from,
-        null,
-        true,
-        { message: e.message, status: 500 },
-      );
+      await channel.reject(originalMsg, false);
+      return generateResMessage(payload.from, payload.to, null, true, {
+        message: e.message,
+        status: 500,
+      });
     }
   }
 

@@ -8,6 +8,12 @@ export interface MicroResInterface {
   to: ServiceNameEnum;
 }
 
+export interface MicroSendInterface {
+  from: ServiceNameEnum;
+  to: ServiceNameEnum;
+  data?: any;
+}
+
 export interface Reason {
   status?: number;
   message: string;
