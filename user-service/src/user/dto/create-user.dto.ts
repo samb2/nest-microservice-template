@@ -1,4 +1,4 @@
-import { ServiceNameEnum } from '../../common/enum/service-name.enum';
+import { ServiceNameEnum } from '@irole/microservices';
 
 export class CreateUserDto {
   from: ServiceNameEnum;

@@ -35,8 +35,7 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { MicroResInterface } from '../common/interfaces/micro-res.interface';
-import { PatternEnum } from '../common/enum/pattern.enum';
+import { MicroResInterface, PatternEnum } from '@irole/microservices';
 
 @ApiTags('auth service')
 @Controller('auth')

@@ -7,9 +7,9 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
-import { PatternEnum } from '../common/enum/pattern.enum';
 import { AccessTokenGuard } from '../utils/passport/jwt-access.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { PatternEnum } from '@irole/microservices';
 
 @Controller('user')
 export class UserController {
@@ -24,7 +24,6 @@ export class UserController {
   @Get()
   @ApiBearerAuth()
   findAll(@Req() req: any) {
-    console.log(req.user);
     return this.userService.findAll();
   }
 

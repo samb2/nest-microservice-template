@@ -2,9 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RmqContext } from '@nestjs/microservices';
 import { UserRepository } from './repository/user.repository';
-import { ServiceNameEnum } from '../common/enum/service-name.enum';
 import { User } from './entities/user.entity';
-import { generateResMessage } from '../common/utils/microservice-message.util';
+import { generateResMessage, ServiceNameEnum } from '@irole/microservices';
 
 @Injectable()
 export class UserService {

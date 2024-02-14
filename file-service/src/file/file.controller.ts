@@ -16,8 +16,8 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { UploadFileDto } from './dto/upload-file.dto';
 import { ImageFilterInterceptor } from './interceptors/image-filter.interceptor';
 import { File } from './schemas/file.schema';
-import { MongoIdValidationPipe } from '../common/pipes/mongoId-validation.pipe';
 import { AccessTokenGuard } from '../utils/passport/jwt-access.guard';
+import { MongoIdValidationPipe } from '@irole/microservices';
 
 @ApiTags('file')
 @Controller('file')

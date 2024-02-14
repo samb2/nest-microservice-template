@@ -26,20 +26,19 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { IAuthServiceInterface } from './interfaces/IAuthService.interface';
-import {
-  MicroResInterface,
-  MicroSendInterface,
-} from '../common/interfaces/micro-res.interface';
+
 import { ClientProxy, RmqContext } from '@nestjs/microservices';
-import { PatternEnum } from '../common/enum/pattern.enum';
-import { ServiceNameEnum } from '../common/enum/service-name.enum';
 import { createTransaction } from '../utils/create-transaction.util';
-import { JwtRefreshPayload } from '../common/interfaces/jwt-refresh-payload.interface';
 import {
   generateMessage,
   generateResMessage,
+  JwtRefreshPayload,
+  MicroResInterface,
+  MicroSendInterface,
+  PatternEnum,
   sendMicroMessage,
-} from '../common/utils/microservice-message.util';
+  ServiceNameEnum,
+} from '@irole/microservices';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {

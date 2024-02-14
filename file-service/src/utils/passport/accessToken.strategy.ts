@@ -2,18 +2,16 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtAccessPayload } from '../../common/interfaces/jwt-access-payload.interface';
-import { ServiceNameEnum } from '../../common/enum/service-name.enum';
 import { ClientProxy } from '@nestjs/microservices';
 import {
+  generateMessage,
+  JwtAccessPayload,
   MicroResInterface,
   MicroSendInterface,
-} from '../../common/interfaces/micro-res.interface';
-import {
-  generateMessage,
+  PatternEnum,
   sendMicroMessage,
-} from '../../common/utils/microservice-message.util';
-import { PatternEnum } from '../../common/enum/pattern.enum';
+  ServiceNameEnum,
+} from '@irole/microservices';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(

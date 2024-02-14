@@ -8,8 +8,8 @@ import { File, FileSchema } from './schemas/file.schema';
 import { FileRepository } from './file.repository';
 import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket, BucketSchema } from '../minio/schemas/bucket.schema';
-import { ServiceNameEnum } from '../common/enum/service-name.enum';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ServiceNameEnum } from '@irole/microservices';
 
 @Module({
   imports: [

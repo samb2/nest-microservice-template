@@ -14,7 +14,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ServiceNameEnum } from './common/enum/service-name.enum';
+import { ServiceNameEnum } from '@irole/microservices';
 
 @Module({
   imports: [

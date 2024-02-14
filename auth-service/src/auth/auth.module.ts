@@ -9,8 +9,8 @@ import { ResetPassword } from './entities/reset-password.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccessTokenStrategy } from '../utils/passport/accessToken.strategy';
 import { RefreshTokenStrategy } from '../utils/passport/refreshToken.strategy';
-import { ServiceNameEnum } from '../common/enum/service-name.enum';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ServiceNameEnum } from '@irole/microservices';
 
 @Module({
   imports: [
