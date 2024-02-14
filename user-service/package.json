@@ -25,10 +25,10 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
   },
   "dependencies": {
-    "@irole/microservices": "^1.0.0",
+    "@irole/microservices": "^1.3.0",
     "@nestjs/cache-manager": "^2.1.1",
     "@nestjs/common": "^10.3.3",
-    "@nestjs/config": "^3.1.1",
+    "@nestjs/config": "^3.2.0",
     "@nestjs/core": "^10.3.3",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/mapped-types": "*",
@@ -52,16 +52,13 @@
     "dotenv": "^16.3.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "nest-winston": "^1.9.4",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.11.3",
     "redis": "^4.6.11",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.17",
-    "winston": "^3.11.0",
-    "winston-daily-rotate-file": "^4.7.1"
+    "typeorm": "^0.3.17"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.2.1",

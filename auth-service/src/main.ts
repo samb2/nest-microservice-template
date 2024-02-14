@@ -11,10 +11,11 @@ import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import * as compression from 'compression';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { HttpExceptionFilter } from './common/exceptions/httpExceptionFilter.exception';
-import 'winston-daily-rotate-file';
-import { winstonLogger } from './common/logger/winston.module';
+import {
+  HttpExceptionFilter,
+  ResponseInterceptor,
+  winstonLogger,
+} from '@irole/microservices';
 
 async function bootstrap(): Promise<void> {
   const app: INestApplication = await NestFactory.create(AppModule);

@@ -5,13 +5,13 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import * as process from 'process';
 import configuration from './config/configuration';
-import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { CacheModule } from '@nestjs/cache-manager';
 import { RedisOptions } from './redis/redis.module';
 import { RedisHealthIndicator } from './health/RedisHealthIndicator';
+import { LoggerMiddleware } from '@irole/microservices';
 
 @Module({
   imports: [

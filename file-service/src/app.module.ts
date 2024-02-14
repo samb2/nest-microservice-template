@@ -4,7 +4,6 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import * as process from 'process';
 import configuration from './config/configuration';
-import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
@@ -14,7 +13,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ServiceNameEnum } from '@irole/microservices';
+import { LoggerMiddleware, ServiceNameEnum } from '@irole/microservices';
 
 @Module({
   imports: [
