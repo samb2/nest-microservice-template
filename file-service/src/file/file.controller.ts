@@ -24,7 +24,6 @@ import { MongoIdValidationPipe } from '@irole/microservices';
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  // TODO check which user upload (auth)
   @UseGuards(AccessTokenGuard)
   @Post('/upload/profile')
   @ApiBearerAuth()

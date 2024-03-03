@@ -23,7 +23,7 @@ export class UserController {
   @UseGuards(AccessTokenGuard)
   @Get()
   @ApiBearerAuth()
-  findAll(@Req() req: any) {
+  findAll(@Req() req: any): Promise<any> {
     return this.userService.findAll();
   }
 

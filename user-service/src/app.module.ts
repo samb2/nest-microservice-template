@@ -9,6 +9,7 @@ import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { UserModule } from './user/user.module';
 import { LoggerMiddleware } from '@irole/microservices';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { LoggerMiddleware } from '@irole/microservices';
       ],
     }),
     UserModule,
+    ProfileModule,
   ],
   controllers: [HealthController],
   providers: [
