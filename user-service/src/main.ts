@@ -71,7 +71,7 @@ async function bootstrap(): Promise<void> {
       ],
       queue: `${configService.get<string>('rabbitMq.user_queue')}`,
       queueOptions: {
-        durable: true,
+        durable: false,
       },
       noAck: false,
     },

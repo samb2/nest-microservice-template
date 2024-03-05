@@ -1,9 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RmqContext } from '@nestjs/microservices';
 import { UserRepository } from './repository/user.repository';
 import { User } from './entities/user.entity';
-import { generateResMessage, ServiceNameEnum } from '@irole/microservices';
+import {
+  generateResMessage,
+  ServiceNameEnum,
+  expireCheck,
+} from '@irole/microservices';
 
 @Injectable()
 export class UserService {
@@ -13,6 +21,9 @@ export class UserService {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
     try {
+      if (!expireCheck(createUserDto.ttl)) {
+        throw new RequestTimeoutException('Token Expired');
+      }
       const user = this.userRepository.create({
         email: createUserDto.data.email,
         authId: createUserDto.data.authId,

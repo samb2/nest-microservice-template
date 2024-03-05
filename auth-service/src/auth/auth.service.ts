@@ -36,14 +36,14 @@ import {
   MicroResInterface,
   MicroSendInterface,
   PatternEnum,
-  sendMicroMessage,
+  sendMicroMessageWithTimeOut,
   ServiceNameEnum,
 } from '@irole/microservices';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
   constructor(
-    @Inject('USER_SERVICE') private readonly userClient: ClientProxy,
+    @Inject(ServiceNameEnum.USER) private readonly userClient: ClientProxy,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     @InjectRepository(User)
@@ -82,17 +82,20 @@ export class AuthService implements IAuthServiceInterface {
         ServiceNameEnum.AUTH,
         ServiceNameEnum.USER,
         payload,
+        '10s',
       );
 
-      const result: MicroResInterface = await sendMicroMessage(
+      const result: MicroResInterface = await sendMicroMessageWithTimeOut(
         this.userClient,
         PatternEnum.USER_REGISTERED,
         message,
+        '10s',
       );
 
       if (result.error) {
         throw new InternalServerErrorException(result.reason.message);
       }
+
       await queryRunner.commitTransaction();
       return { message: 'Register Successfully' };
     } catch (e) {

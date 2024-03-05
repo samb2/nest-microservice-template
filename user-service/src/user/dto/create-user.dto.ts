@@ -4,6 +4,7 @@ export class CreateUserDto {
   from: ServiceNameEnum;
   to: ServiceNameEnum;
   data: UserInfo;
+  ttl: number;
 }
 
 class UserInfo {

@@ -35,7 +35,7 @@ import { ServiceNameEnum } from '@irole/microservices';
             ],
             queue: `${configService.get<string>('rabbitMq.user_queue')}`,
             queueOptions: {
-              durable: true,
+              durable: false,
             },
           },
         }),
