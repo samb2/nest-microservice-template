@@ -21,7 +21,7 @@ export class HealthController {
   check() {
     return this.health.check([
       () => this.db.pingCheck('database'),
-      () => this.redisHealthIndicator.isHealthy('redis'),
+      () => this.redisHealthIndicator.isHealthy('redis-auth'),
     ]);
   }
 }

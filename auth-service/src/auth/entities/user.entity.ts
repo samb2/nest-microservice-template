@@ -1,6 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  BeforeInsert,
+} from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { ResetPassword } from './reset-password.entity';
+import { UsersRoles } from './users-roles.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -39,4 +46,13 @@ export class User {
 
   @OneToMany(() => ResetPassword, (resetPassword) => resetPassword.user)
   resetPassword: ResetPassword[];
+
+  @OneToMany(() => UsersRoles, (usersRoles) => usersRoles.user)
+  @Exclude()
+  userRoles: UsersRoles[];
+
+  @BeforeInsert()
+  async normalizeEmail() {
+    this.email = this.email.toLowerCase();
+  }
 }

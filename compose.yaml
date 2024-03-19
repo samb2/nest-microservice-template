@@ -9,26 +9,26 @@
 # https://github.com/docker/awesome-compose
 services:
 
-#  file-service:
-#    build:
-#      context: ./file-service
-#    environment:
-#      NODE_ENV: production
-#    container_name: file-service
-#    ports:
-#      - "4000:4000"
-#    networks:
-#      - file_service
-#
-#    # The commented out section below is an example of how to define a PostgreSQL
-#    # database that your application can use. `depends_on` tells Docker Compose to
-#    # start the database before your application. The `db-data` volume persists the
-#    # database data between container restarts. The `db-password` secret is used
-#    # to set the database password. You must create `db/password.txt` and add
-#    # a password of your choosing to it before running `docker-compose up`.
-#    depends_on:
-#      mongo-file:
-#        condition: service_healthy
+  #  file-service:
+  #    build:
+  #      context: ./file-service
+  #    environment:
+  #      NODE_ENV: production
+  #    container_name: file-service
+  #    ports:
+  #      - "4000:4000"
+  #    networks:
+  #      - file_service
+  #
+  #    # The commented out section below is an example of how to define a PostgreSQL
+  #    # database that your application can use. `depends_on` tells Docker Compose to
+  #    # start the database before your application. The `db-data` volume persists the
+  #    # database data between container restarts. The `db-password` secret is used
+  #    # to set the database password. You must create `db/password.txt` and add
+  #    # a password of your choosing to it before running `docker-compose up`.
+  #    depends_on:
+  #      mongo-file:
+  #        condition: service_healthy
 
   user-service:
     build:
@@ -48,8 +48,12 @@ services:
     # to set the database password. You must create `db/password.txt` and add
     # a password of your choosing to it before running `docker-compose up`.
     depends_on:
-      postgres-auth:
+      postgres:
         condition: service_healthy
+      redis-common:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
 
   auth-service:
     build:
@@ -69,16 +73,20 @@ services:
     # to set the database password. You must create `db/password.txt` and add
     # a password of your choosing to it before running `docker-compose up`.
     depends_on:
-      postgres-auth:
+      postgres:
         condition: service_healthy
       redis-auth:
         condition: service_started
+      redis-common:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
 
-  postgres-auth:
+  postgres:
     image: postgres
     restart: always
     user: postgres
-    container_name: postgres-auth
+    container_name: postgres-service
     env_file:
       - .env
     ports:
@@ -89,7 +97,7 @@ services:
       - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
       - POSTGRES_DB=${AUTH_DB_NAME}
     volumes:
-      - postgres-auth:/var/lib/postgresql/data/:rw
+      - postgres:/var/lib/postgresql/data/:rw
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
@@ -99,41 +107,41 @@ services:
       - auth_service
       - user_service
 
-#  mongo-file:
-#    image: mongo
-#    hostname: mongo
-#    restart: always
-#    container_name: mongo-file
-#    ports:
-#      - "27017:27017"
-#    networks:
-#      - file_service
-#    volumes:
-#      - mongo-file:/data/db
-#    command: [ "--bind_ip", "0.0.0.0" ]
-#    healthcheck:
-#      test: echo 'db.runCommand("ping").ok' mongo localhost:27017/test --quiet
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
+  #  mongo-file:
+  #    image: mongo
+  #    hostname: mongo
+  #    restart: always
+  #    container_name: mongo-file
+  #    ports:
+  #      - "27017:27017"
+  #    networks:
+  #      - file_service
+  #    volumes:
+  #      - mongo-file:/data/db
+  #    command: [ "--bind_ip", "0.0.0.0" ]
+  #    healthcheck:
+  #      test: echo 'db.runCommand("ping").ok' mongo localhost:27017/test --quiet
+  #      interval: 30s
+  #      timeout: 10s
+  #      retries: 5
 
-#  minio:
-#    image: "minio/minio"
-#    restart: always
-#    ports:
-#      - "9000:9000"
-#      - "9001:9001"
-#    command: minio server /data --console-address ":9001"
-#    container_name: minio-file
-#    env_file:
-#      - .env
-#    volumes:
-#      - minio:/data
-#    environment:
-#      - MINIO_ROOT_USER=${FILE_MINIO_USER}
-#      - MINIO_ROOT_PASSWORD=${FILE_MINIO_PASSWORD}
-#    networks:
-#      - file_service
+  #  minio:
+  #    image: "minio/minio"
+  #    restart: always
+  #    ports:
+  #      - "9000:9000"
+  #      - "9001:9001"
+  #    command: minio server /data --console-address ":9001"
+  #    container_name: minio-file
+  #    env_file:
+  #      - .env
+  #    volumes:
+  #      - minio:/data
+  #    environment:
+  #      - MINIO_ROOT_USER=${FILE_MINIO_USER}
+  #      - MINIO_ROOT_PASSWORD=${FILE_MINIO_PASSWORD}
+  #    networks:
+  #      - file_service
 
   redis-auth:
     image: redis/redis-stack:latest
@@ -142,8 +150,24 @@ services:
     ports:
       - "6379:6379"
       - "8001:8001"
+    volumes:
+      - redis-auth:/data
     networks:
       - auth_service
+
+  redis-common:
+    image: redis/redis-stack:latest
+    restart: always
+    container_name: redis-common
+    ports:
+      - "6380:6379"
+      - "8002:8001"
+    volumes:
+      - redis-common:/data
+    networks:
+      - file_service
+      - auth_service
+      - user_service
 
   rabbitmq:
     image: rabbitmq:latest
@@ -163,10 +187,12 @@ services:
       - user_service
 
 volumes:
-  postgres-auth:
+  postgres:
   mongo-file:
   rabbit_data:
   minio:
+  redis-auth:
+  redis-common:
 
 networks:
   file_service:

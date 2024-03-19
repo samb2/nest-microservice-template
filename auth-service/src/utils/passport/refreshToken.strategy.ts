@@ -2,9 +2,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { JwtRefreshPayload } from '@irole/microservices';
+import Redis from 'ioredis';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -13,7 +12,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
 ) {
   constructor(
     private configService: ConfigService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject('RedisRefresh') private readonly redisRefresh: Redis,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -26,7 +25,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
   async validate(req: any, payload: JwtRefreshPayload): Promise<any> {
     // get refresh token
     const token = req.headers.authorization.split(' ')[1];
-    const redisRefreshToken = await this.cacheManager.get(payload.authId);
+    const redisRefreshToken = await this.redisRefresh.get(payload.authId);
     if (token === redisRefreshToken) {
       return payload.authId;
     }

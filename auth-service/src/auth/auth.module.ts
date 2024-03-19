@@ -11,6 +11,10 @@ import { AccessTokenStrategy } from '../utils/passport/accessToken.strategy';
 import { RefreshTokenStrategy } from '../utils/passport/refreshToken.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServiceNameEnum } from '@irole/microservices';
+import {
+  redisCommonFactory,
+  redisRefreshFactory,
+} from '../redis/redis-client.factory';
 
 @Module({
   imports: [
@@ -44,6 +48,12 @@ import { ServiceNameEnum } from '@irole/microservices';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
+  providers: [
+    AuthService,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+    redisRefreshFactory,
+    redisCommonFactory,
+  ],
 })
 export class AuthModule {}

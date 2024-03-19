@@ -1,89 +1,89 @@
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Docker compose reference guide at
-# https://docs.docker.com/compose/compose-file/
-
-# Here the instructions define your application as a service called "server".
-# This service is built from the Dockerfile in the current directory.
-# You can add other services your application may depend on here, such as a
-# database or a cache. For examples, see the Awesome Compose repository:
-# https://github.com/docker/awesome-compose
-services:
-  server:
-    build:
-      context: .
-    environment:
-      NODE_ENV: production
-    container_name: auth-service
-    ports:
-      - "3000:3000"
-    networks:
-      - auth_service
-
-    # The commented out section below is an example of how to define a PostgreSQL
-    # database that your application can use. `depends_on` tells Docker Compose to
-    # start the database before your application. The `db-data` volume persists the
-    # database data between container restarts. The `db-password` secret is used
-    # to set the database password. You must create `db/password.txt` and add
-    # a password of your choosing to it before running `docker-compose up`.
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-
-  postgres:
-    image: postgres
-    restart: always
-    user: postgres
-    container_name: postgres-auth
-    env_file:
-      - .env.production
-    ports:
-      - "5432:5432"
-    command: postgres -c 'max_connections=500' -c 'idle_in_transaction_session_timeout=20000' -c 'statement_timeout=20000'
-    environment:
-      - POSTGRES_USER=${DB_USERNAME}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_DATABASE}
-    volumes:
-      - postgres:/var/lib/postgresql/data/:rw
-    healthcheck:
-      test: [ "CMD", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - auth_service
-
-  redis:
-    image: redis
-    restart: always
-    container_name: redis-auth
-    ports:
-      - "6379:6379"
-    networks:
-      - auth_service
-
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    env_file:
-      - .env.production
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RMQ_USERNAME}
-      - RABBITMQ_DEFAULT_PASS=${RMQ_PASSWORD}
-    volumes:
-      - rabbit_data:/var/lib/rabbitmq
-    networks:
-      - auth_service
-
-
-volumes:
-  postgres:
-networks:
-  auth_service:
-    driver: bridge
-
-
+## Comments are provided throughout this file to help you get started.
+## If you need more help, visit the Docker compose reference guide at
+## https://docs.docker.com/compose/compose-file/
+#
+## Here the instructions define your application as a service called "server".
+## This service is built from the Dockerfile in the current directory.
+## You can add other services your application may depend on here, such as a
+## database or a cache. For examples, see the Awesome Compose repository:
+## https://github.com/docker/awesome-compose
+#services:
+#  server:
+#    build:
+#      context: .
+#    environment:
+#      NODE_ENV: production
+#    container_name: auth-service
+#    ports:
+#      - "3000:3000"
+#    networks:
+#      - auth_service
+#
+#    # The commented out section below is an example of how to define a PostgreSQL
+#    # database that your application can use. `depends_on` tells Docker Compose to
+#    # start the database before your application. The `db-data` volume persists the
+#    # database data between container restarts. The `db-password` secret is used
+#    # to set the database password. You must create `db/password.txt` and add
+#    # a password of your choosing to it before running `docker-compose up`.
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#
+#  postgres:
+#    image: postgres
+#    restart: always
+#    user: postgres
+#    container_name: postgres
+#    env_file:
+#      - .env.production
+#    ports:
+#      - "5432:5432"
+#    command: postgres -c 'max_connections=500' -c 'idle_in_transaction_session_timeout=20000' -c 'statement_timeout=20000'
+#    environment:
+#      - POSTGRES_USER=${DB_USERNAME}
+#      - POSTGRES_PASSWORD=${DB_PASSWORD}
+#      - POSTGRES_DB=${DB_DATABASE}
+#    volumes:
+#      - postgres:/var/lib/postgresql/data/:rw
+#    healthcheck:
+#      test: [ "CMD", "pg_isready" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    networks:
+#      - auth_service
+#
+#  redis:
+#    image: redis
+#    restart: always
+#    container_name: redis-auth
+#    ports:
+#      - "6379:6379"
+#    networks:
+#      - auth_service
+#
+#  rabbitmq:
+#    image: rabbitmq:3-management-alpine
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    env_file:
+#      - .env.production
+#    environment:
+#      - RABBITMQ_DEFAULT_USER=${RMQ_USERNAME}
+#      - RABBITMQ_DEFAULT_PASS=${RMQ_PASSWORD}
+#    volumes:
+#      - rabbit_data:/var/lib/rabbitmq
+#    networks:
+#      - auth_service
+#
+#
+#volumes:
+#  postgres:
+#networks:
+#  auth_service:
+#    driver: bridge
+#
+#

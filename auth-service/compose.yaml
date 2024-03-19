@@ -35,7 +35,7 @@ services:
     image: postgres
     restart: always
     user: postgres
-    container_name: postgres-auth
+    container_name: postgres
     env_file:
       - .env.production
     ports:

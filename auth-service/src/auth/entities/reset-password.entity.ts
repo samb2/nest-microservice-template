@@ -13,7 +13,7 @@ export class ResetPassword {
   id: string;
 
   @ManyToOne(() => User, (user) => user.resetPassword, { onDelete: 'CASCADE' })
-  @JoinColumn()
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @Column()

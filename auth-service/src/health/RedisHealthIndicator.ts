@@ -4,19 +4,16 @@ import {
   HealthIndicatorResult,
   HealthCheckError,
 } from '@nestjs/terminus';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache, Store } from 'cache-manager';
+import Redis from 'ioredis';
 
 @Injectable()
 export class RedisHealthIndicator extends HealthIndicator {
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+  constructor(@Inject('RedisRefresh') private readonly redisRefresh: Redis) {
     super();
   }
 
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
-    const store: Store = this.cacheManager.store;
-    const keys = await store.keys();
-    const isHealthy: boolean = keys.length >= 0;
+    const isHealthy = !!(await this.redisRefresh.ping());
     const result = this.getStatus(key, isHealthy, {});
     if (isHealthy) {
       return result;

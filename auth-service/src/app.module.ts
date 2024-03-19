@@ -8,10 +8,14 @@ import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
-import { CacheModule } from '@nestjs/cache-manager';
-import { RedisOptions } from './redis/redis.module';
-import { RedisHealthIndicator } from './health/RedisHealthIndicator';
 import { LoggerMiddleware } from '@irole/microservices';
+import { RoleModule } from './role/role.module';
+import { PermissionModule } from './permission/permission.module';
+import { RedisHealthIndicator } from './health/RedisHealthIndicator';
+import {
+  redisCommonFactory,
+  redisRefreshFactory,
+} from './redis/redis-client.factory';
 
 @Module({
   imports: [
@@ -22,7 +26,6 @@ import { LoggerMiddleware } from '@irole/microservices';
       cache: true,
     }),
     TerminusModule,
-    CacheModule.registerAsync(RedisOptions),
     DatabaseModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
@@ -35,9 +38,13 @@ import { LoggerMiddleware } from '@irole/microservices';
       ],
     }),
     AuthModule,
+    RoleModule,
+    PermissionModule,
   ],
   controllers: [HealthController],
   providers: [
+    redisCommonFactory,
+    redisRefreshFactory,
     RedisHealthIndicator,
     {
       provide: APP_GUARD,

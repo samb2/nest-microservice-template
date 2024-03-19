@@ -22,8 +22,6 @@ import { User } from './entities/user.entity';
 import { ResetPassword } from './entities/reset-password.entity';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ResetPasswordResDto } from './dto/response/resetPasswordRes.dto';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { IAuthServiceInterface } from './interfaces/IAuthService.interface';
 
@@ -32,6 +30,7 @@ import { createTransaction } from '../utils/create-transaction.util';
 import {
   generateMessage,
   generateResMessage,
+  JwtAccessPayload,
   JwtRefreshPayload,
   MicroResInterface,
   MicroSendInterface,
@@ -39,6 +38,10 @@ import {
   sendMicroMessageWithTimeOut,
   ServiceNameEnum,
 } from '@irole/microservices';
+import Redis from 'ioredis';
+import { UsersRoles } from './entities/users-roles.entity';
+import { Role } from '../role/entities/role.entity';
+import { RoleEnum } from '../role/enum/role.enum';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
@@ -51,7 +54,8 @@ export class AuthService implements IAuthServiceInterface {
     @InjectRepository(ResetPassword)
     private readonly resetPasswordRep: Repository<ResetPassword>,
     private readonly dataSource: DataSource,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject('RedisRefresh') private readonly redisRefresh: Redis,
+    @Inject('RedisCommon') private readonly redisCommon: Redis,
   ) {
     this.userClient.connect().then();
   }
@@ -73,6 +77,23 @@ export class AuthService implements IAuthServiceInterface {
         password: hashedPassword,
       });
       await userRepository.save(user);
+
+      // Role
+      const role: Role = await queryRunner.manager.getRepository(Role).findOne({
+        where: {
+          name: RoleEnum.USER,
+        },
+      });
+
+      const usersRoles: UsersRoles = queryRunner.manager
+        .getRepository(UsersRoles)
+        .create({
+          user,
+          role,
+        });
+      await queryRunner.manager.getRepository(UsersRoles).save(usersRoles);
+
+      //---------------------------------------
 
       const payload = {
         authId: user.id,
@@ -110,7 +131,6 @@ export class AuthService implements IAuthServiceInterface {
     const { email, password } = loginDto;
     try {
       const user: User = await this.validateUserByEmail(email);
-
       if (!user || !(await comparePassword(password, user.password))) {
         throw new UnauthorizedException('Invalid username or password!');
       }
@@ -119,17 +139,27 @@ export class AuthService implements IAuthServiceInterface {
         throw new ForbiddenException('your account is not active!');
       }
       // Generate Tokens
-      const payload: JwtRefreshPayload = { authId: user.id };
+      const roleIds: number[] = user.userRoles.map(
+        (userRole) => userRole.role.id,
+      );
+
+      const refreshPayload: JwtRefreshPayload = {
+        authId: user.id,
+      };
+      const accessPayload: JwtAccessPayload = {
+        authId: user.id,
+        roles: roleIds,
+      };
       const refresh_token: string = this.generateToken(
-        payload,
+        refreshPayload,
         TokenTypeEnum.REFRESH,
       );
       const access_token: string = this.generateToken(
-        payload,
+        accessPayload,
         TokenTypeEnum.ACCESS,
       );
       // Save Refresh Token In Cache
-      await this.cacheManager.set(user.id, refresh_token);
+      await this.redisRefresh.set(user.id, refresh_token);
 
       return { user, access_token, refresh_token };
     } catch (e) {
@@ -243,7 +273,7 @@ export class AuthService implements IAuthServiceInterface {
 
   public async logout(user: User): Promise<object> {
     try {
-      await this.cacheManager.set(user.email, '');
+      await this.redisRefresh.set(user.id, '');
       return { message: 'Logout Successfully' };
     } catch (e) {
       throw e;
@@ -258,6 +288,7 @@ export class AuthService implements IAuthServiceInterface {
   public async validateUserByEmail(email: string): Promise<User | undefined> {
     return this.userRepository.findOne({
       where: { email, isDelete: false },
+      relations: ['userRoles', 'userRoles.role'],
     });
   }
 

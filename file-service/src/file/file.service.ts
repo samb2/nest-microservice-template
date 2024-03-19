@@ -7,6 +7,7 @@ import { FileRepository } from './file.repository';
 import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket } from '../minio/schemas/bucket.schema';
 import { File } from './schemas/file.schema';
+import { BucketEnum } from '../minio/bucket.enum';
 
 @Injectable()
 export class FileService {
@@ -28,10 +29,10 @@ export class FileService {
     const bucketKey: string = `profiles/${filename}${extension}`;
 
     const bucket: Bucket = await this.bucketRepo.findOne({
-      name: 'images',
+      name: BucketEnum.IMAGES,
     });
     if (!bucket) {
-      throw new Error('Bucket not found');
+      throw new Error(`Bucket ${BucketEnum.IMAGES} not found`);
     }
     // Save to Minio
     await this.minioService.insertFile(
