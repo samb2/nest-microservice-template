@@ -19,16 +19,18 @@ export class AccessTokenStrategy extends PassportStrategy(
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get('jwt.access_key'),
+      passReqToCallback: true,
     });
   }
 
-  async validate(payload: JwtAccessPayload): Promise<any> {
+  async validate(req: any, payload: JwtAccessPayload): Promise<any> {
     const user: User = await this.userService.validateUserByAuthId(
       payload.authId,
     );
     if (!user) {
       throw new UnauthorizedException();
     }
+    req.roles = payload.roles;
     return user;
   }
 }

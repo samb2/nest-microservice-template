@@ -10,6 +10,8 @@ import { TerminusModule } from '@nestjs/terminus';
 import { UserModule } from './user/user.module';
 import { LoggerMiddleware } from '@irole/microservices';
 import { ProfileModule } from './profile/profile.module';
+import { redisCommonFactory } from './redis/redis-client.factory';
+import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { ProfileModule } from './profile/profile.module';
   ],
   controllers: [HealthController],
   providers: [
+    redisCommonFactory,
+    RedisHealthIndicator,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

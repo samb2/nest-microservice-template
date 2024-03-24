@@ -14,6 +14,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { LoggerMiddleware, ServiceNameEnum } from '@irole/microservices';
+import { redisCommonFactory } from './redis/redis-client.factory';
+import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
 
 @Module({
   imports: [
@@ -67,6 +69,8 @@ import { LoggerMiddleware, ServiceNameEnum } from '@irole/microservices';
   ],
   controllers: [HealthController],
   providers: [
+    redisCommonFactory,
+    RedisHealthIndicator,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

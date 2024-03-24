@@ -12,7 +12,7 @@ export class ProfileService {
     return `This action returns all profile`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} profile`;
   }
 

@@ -10,10 +10,12 @@ import { rabbitMq } from './rabbitMq.config';
 import { jwt } from './jwt.config';
 import { database } from './database.config';
 import { minio } from './minio.config';
+import { redis } from './redis.config';
 
 export default () => ({
   server,
   database,
+  redis,
   rabbitMq,
   jwt,
   rateLimit,

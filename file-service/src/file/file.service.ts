@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { v4 as uuidV4 } from 'uuid';
 import * as path from 'path';
 import { MinioService } from '../minio/minio.service';
@@ -8,19 +13,28 @@ import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket } from '../minio/schemas/bucket.schema';
 import { File } from './schemas/file.schema';
 import { BucketEnum } from '../minio/bucket.enum';
+import {
+  generateMessage,
+  MicroResInterface,
+  MicroSendInterface,
+  PatternEnum,
+  sendMicroMessage,
+  ServiceNameEnum,
+} from '@irole/microservices';
 
 @Injectable()
 export class FileService {
   constructor(
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
+    @Inject(ServiceNameEnum.USER) private readonly userClient: ClientProxy,
     @Inject(MinioService) private readonly minioService: MinioService,
     private readonly fileRepo: FileRepository,
     private readonly bucketRepo: BucketRepository,
   ) {
-    this.authClient.connect().then();
+    this.userClient.connect().then();
   }
 
-  async upload(image: any, userId: string): Promise<File> {
+  //todo add transaction for mongo
+  async upload(image: any, user: any): Promise<any> {
     const metaData: object = {
       'content-type': image.mimetype,
     };
@@ -34,23 +48,53 @@ export class FileService {
     if (!bucket) {
       throw new Error(`Bucket ${BucketEnum.IMAGES} not found`);
     }
-    // Save to Minio
-    await this.minioService.insertFile(
-      bucket.name,
-      bucketKey,
-      image.buffer,
-      metaData,
-    );
-    // Save to File
-    return this.fileRepo.insert({
-      name: image.originalname,
-      bucket: bucket.id,
-      key: bucketKey,
-      size: image.size,
-      mimeType: image.mimetype,
-      uploadedBy: userId,
-      path: `${bucket.name}/${bucketKey}`,
-    });
+    try {
+      // Save to Minio
+      await this.minioService.insertFile(
+        bucket.name,
+        bucketKey,
+        image.buffer,
+        metaData,
+      );
+      // Save to File
+      const file: File = await this.fileRepo.insert({
+        name: image.originalname,
+        bucket: bucket.id,
+        key: bucketKey,
+        size: image.size,
+        mimeType: image.mimetype,
+        uploadedBy: user.id,
+        path: `${bucket.name}/${bucketKey}`,
+      });
+      // send to user service
+      const payload = {
+        authId: user.id,
+        avatar: `${bucket.name}/${bucketKey}`,
+      };
+      const message: MicroSendInterface = generateMessage(
+        ServiceNameEnum.FILE,
+        ServiceNameEnum.USER,
+        payload,
+      );
+      const result: MicroResInterface = await sendMicroMessage(
+        this.userClient,
+        PatternEnum.USER_IMAGE_UPLOADED,
+        message,
+      );
+
+      if (result.data.delete) {
+        await this.minioService.removeObject(
+          BucketEnum.IMAGES,
+          result.data.avatar,
+        );
+      }
+      if (result.error) {
+        throw new InternalServerErrorException(result.reason.message);
+      }
+      return file;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 
   async findAll(): Promise<File[]> {

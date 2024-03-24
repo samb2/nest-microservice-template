@@ -30,57 +30,57 @@ services:
   #      mongo-file:
   #        condition: service_healthy
 
-  user-service:
-    build:
-      context: ./user-service
-    environment:
-      NODE_ENV: production
-    container_name: user-service
-    ports:
-      - "6000:6000"
-    networks:
-      - user_service
+#  user-service:
+#    build:
+#      context: ./user-service
+#    environment:
+#      NODE_ENV: production
+#    container_name: user-service
+#    ports:
+#      - "6000:6000"
+#    networks:
+#      - user_service
+#
+#    # The commented out section below is an example of how to define a PostgreSQL
+#    # database that your application can use. `depends_on` tells Docker Compose to
+#    # start the database before your application. The `db-data` volume persists the
+#    # database data between container restarts. The `db-password` secret is used
+#    # to set the database password. You must create `db/password.txt` and add
+#    # a password of your choosing to it before running `docker-compose up`.
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      redis-common:
+#        condition: service_started
+#      rabbitmq:
+#        condition: service_started
 
-    # The commented out section below is an example of how to define a PostgreSQL
-    # database that your application can use. `depends_on` tells Docker Compose to
-    # start the database before your application. The `db-data` volume persists the
-    # database data between container restarts. The `db-password` secret is used
-    # to set the database password. You must create `db/password.txt` and add
-    # a password of your choosing to it before running `docker-compose up`.
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis-common:
-        condition: service_started
-      rabbitmq:
-        condition: service_started
-
-  auth-service:
-    build:
-      context: ./auth-service
-    environment:
-      NODE_ENV: production
-    container_name: auth-service
-    ports:
-      - "3000:3000"
-    networks:
-      - auth_service
-
-    # The commented out section below is an example of how to define a PostgreSQL
-    # database that your application can use. `depends_on` tells Docker Compose to
-    # start the database before your application. The `db-data` volume persists the
-    # database data between container restarts. The `db-password` secret is used
-    # to set the database password. You must create `db/password.txt` and add
-    # a password of your choosing to it before running `docker-compose up`.
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis-auth:
-        condition: service_started
-      redis-common:
-        condition: service_started
-      rabbitmq:
-        condition: service_started
+#  auth-service:
+#    build:
+#      context: ./auth-service
+#    environment:
+#      NODE_ENV: production
+#    container_name: auth-service
+#    ports:
+#      - "3000:3000"
+#    networks:
+#      - auth_service
+#
+#    # The commented out section below is an example of how to define a PostgreSQL
+#    # database that your application can use. `depends_on` tells Docker Compose to
+#    # start the database before your application. The `db-data` volume persists the
+#    # database data between container restarts. The `db-password` secret is used
+#    # to set the database password. You must create `db/password.txt` and add
+#    # a password of your choosing to it before running `docker-compose up`.
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      redis-auth:
+#        condition: service_started
+#      redis-common:
+#        condition: service_started
+#      rabbitmq:
+#        condition: service_started
 
   postgres:
     image: postgres
@@ -107,41 +107,41 @@ services:
       - auth_service
       - user_service
 
-  #  mongo-file:
-  #    image: mongo
-  #    hostname: mongo
-  #    restart: always
-  #    container_name: mongo-file
-  #    ports:
-  #      - "27017:27017"
-  #    networks:
-  #      - file_service
-  #    volumes:
-  #      - mongo-file:/data/db
-  #    command: [ "--bind_ip", "0.0.0.0" ]
-  #    healthcheck:
-  #      test: echo 'db.runCommand("ping").ok' mongo localhost:27017/test --quiet
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
+  mongo-file:
+    image: mongo
+    hostname: mongo
+    restart: always
+    container_name: mongo-file
+    ports:
+      - "27017:27017"
+    networks:
+      - file_service
+    volumes:
+      - mongo-file:/data/db
+    command: [ "--bind_ip", "0.0.0.0" ]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' mongo localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
-  #  minio:
-  #    image: "minio/minio"
-  #    restart: always
-  #    ports:
-  #      - "9000:9000"
-  #      - "9001:9001"
-  #    command: minio server /data --console-address ":9001"
-  #    container_name: minio-file
-  #    env_file:
-  #      - .env
-  #    volumes:
-  #      - minio:/data
-  #    environment:
-  #      - MINIO_ROOT_USER=${FILE_MINIO_USER}
-  #      - MINIO_ROOT_PASSWORD=${FILE_MINIO_PASSWORD}
-  #    networks:
-  #      - file_service
+  minio:
+    image: "minio/minio"
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: minio server /data --console-address ":9001"
+    container_name: minio-file
+    env_file:
+      - .env
+    volumes:
+      - minio:/data
+    environment:
+      - MINIO_ROOT_USER=${FILE_MINIO_USER}
+      - MINIO_ROOT_PASSWORD=${FILE_MINIO_PASSWORD}
+    networks:
+      - file_service
 
   redis-auth:
     image: redis/redis-stack:latest

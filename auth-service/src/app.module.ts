@@ -11,11 +11,11 @@ import { TerminusModule } from '@nestjs/terminus';
 import { LoggerMiddleware } from '@irole/microservices';
 import { RoleModule } from './role/role.module';
 import { PermissionModule } from './permission/permission.module';
-import { RedisHealthIndicator } from './health/RedisHealthIndicator';
 import {
   redisCommonFactory,
   redisRefreshFactory,
 } from './redis/redis-client.factory';
+import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
 
 @Module({
   imports: [

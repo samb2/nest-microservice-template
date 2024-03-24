@@ -26,10 +26,11 @@ export class AccessTokenStrategy extends PassportStrategy(
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get('jwt.access_key'),
+      passReqToCallback: true,
     });
   }
 
-  async validate(payload: JwtAccessPayload): Promise<any> {
+  async validate(req: any, payload: JwtAccessPayload): Promise<any> {
     const message: MicroSendInterface = generateMessage(
       ServiceNameEnum.FILE,
       ServiceNameEnum.AUTH,
@@ -46,6 +47,7 @@ export class AccessTokenStrategy extends PassportStrategy(
     if (result.error) {
       throw new UnauthorizedException(result.reason.message);
     }
+    req.roles = payload.roles;
     return result.data;
   }
 }

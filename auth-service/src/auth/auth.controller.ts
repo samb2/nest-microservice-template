@@ -27,8 +27,7 @@ import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ResetPasswordResDto } from './dto/response/resetPasswordRes.dto';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
-import { RefreshTokenGuard } from '../utils/passport/jwt-refresh.guard';
-import { AccessTokenGuard } from '../utils/passport/jwt-access.guard';
+
 import {
   Ctx,
   MessagePattern,
@@ -36,6 +35,8 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
+import { RefreshTokenGuard } from '../utils/guard/jwt-refresh.guard';
+import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 
 @ApiTags('auth service')
 @Controller('auth')

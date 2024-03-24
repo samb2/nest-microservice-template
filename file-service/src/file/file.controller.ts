@@ -16,24 +16,29 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { UploadFileDto } from './dto/upload-file.dto';
 import { ImageFilterInterceptor } from './interceptors/image-filter.interceptor';
 import { File } from './schemas/file.schema';
-import { AccessTokenGuard } from '../utils/passport/jwt-access.guard';
-import { MongoIdValidationPipe } from '@irole/microservices';
+import {
+  MongoIdValidationPipe,
+  PermissionEnum,
+  Permissions,
+} from '@irole/microservices';
+import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
+import { PermissionGuard } from '../utils/guard/permission.guard';
+
+//import { Permissions } from '../utils/decorator/permissions.decorator';
 
 @ApiTags('file')
 @Controller('file')
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @UseGuards(AccessTokenGuard)
+  @UseGuards(AccessTokenGuard, PermissionGuard)
+  @Permissions(PermissionEnum.CREATE_PROFILE_IMAGE)
   @Post('/upload/profile')
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UploadFileDto })
   @UseInterceptors(FileInterceptor('file'), ImageFilterInterceptor)
-  upload(
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req: any,
-  ): Promise<File> {
+  upload(@UploadedFile() file: Express.Multer.File, @Req() req: any): any {
     return this.fileService.upload(file, req.user);
   }
 

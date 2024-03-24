@@ -24,7 +24,6 @@ import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ResetPasswordResDto } from './dto/response/resetPasswordRes.dto';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { IAuthServiceInterface } from './interfaces/IAuthService.interface';
-
 import { ClientProxy, RmqContext } from '@nestjs/microservices';
 import { createTransaction } from '../utils/create-transaction.util';
 import {
@@ -313,7 +312,7 @@ export class AuthService implements IAuthServiceInterface {
         });
       }
       channel.ack(originalMsg);
-      return generateResMessage(payload.from, payload.to, user.id, false);
+      return generateResMessage(payload.from, payload.to, user, false);
     } catch (e) {
       await channel.reject(originalMsg, false);
       return generateResMessage(payload.from, payload.to, null, true, {

@@ -12,6 +12,9 @@ export class User {
   @Column({ name: 'auth_id', unique: true })
   authId: string;
 
+  @Column({ nullable: true })
+  avatar: string;
+
   @Column({ name: 'first_name', nullable: true })
   firstName: string;
 

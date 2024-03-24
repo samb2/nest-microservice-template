@@ -5,16 +5,29 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateBucketDto } from './dto/create-bucket.dto';
-import { MinioService as MinioPackageService } from 'nestjs-minio-client';
+//import { MinioService as MinioPackageService } from 'nestjs-minio-client';
 import { BucketRepository } from './bucket.repository';
 import { Bucket } from './schemas/bucket.schema';
+import { Client } from 'minio';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MinioService {
+  public minioService;
+
   constructor(
-    private readonly minioService: MinioPackageService,
+    //private readonly minioService: MinioPackageService,
     private readonly bucketRepo: BucketRepository,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.minioService = new Client({
+      endPoint: configService.get('minio.endPoint'),
+      port: parseInt(configService.get('minio.port')),
+      useSSL: configService.get<boolean>('minio.useSSL'),
+      accessKey: configService.get('minio.accessKey'),
+      secretKey: configService.get('minio.secretKey'),
+    });
+  }
 
   async createBucket(createBucketDto: CreateBucketDto): Promise<Bucket> {
     try {
@@ -36,7 +49,7 @@ export class MinioService {
     metaData: any,
   ): Promise<void> {
     try {
-      this.minioService.client.putObject(bucketName, buketKey, file, metaData);
+      this.minioService.putObject(bucketName, buketKey, file, metaData);
     } catch (e) {
       throw e;
     }
@@ -47,7 +60,7 @@ export class MinioService {
   }
 
   async listBuckets(): Promise<any[]> {
-    return this.minioService.client.listBuckets();
+    return this.minioService.listBuckets();
   }
 
   async removeBucket(bucketName: string): Promise<string> {
@@ -56,7 +69,7 @@ export class MinioService {
       if (!bucketExist) {
         throw new NotFoundException('Bucket not found');
       }
-      await this.minioService.client.removeBucket(bucketName).catch((error) => {
+      await this.minioService.removeBucket(bucketName).catch((error) => {
         throw new InternalServerErrorException(error.message);
       });
       await this.bucketRepo.findOneAndDelete({
@@ -68,12 +81,11 @@ export class MinioService {
     }
   }
 
-  async removeObject(bucketName: string, bucketKey: string): Promise<string> {
-    await this.minioService.client.removeObject(
+  async removeObject(bucketName: string, bucketKey: string): Promise<any> {
+    await this.minioService.removeObject(
       bucketName, // bucket name
       bucketKey, // object name
     );
-    return `This action removes a #${bucketKey}`;
   }
 
   async _createBucketIfNotExist(bucketName: string): Promise<void> {
@@ -82,11 +94,11 @@ export class MinioService {
       throw new ConflictException(`Bucket ${bucketName} already exists`);
     }
     if (!bucketExist) {
-      await this.minioService.client.makeBucket(bucketName);
+      await this.minioService.makeBucket(bucketName);
     }
   }
 
   async _bucketExists(bucketName: string): Promise<boolean> {
-    return this.minioService.client.bucketExists(bucketName);
+    return this.minioService.bucketExists(bucketName);
   }
 }

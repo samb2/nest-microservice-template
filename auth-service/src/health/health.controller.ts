@@ -5,7 +5,7 @@ import {
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
 import { ApiTags } from '@nestjs/swagger';
-import { RedisHealthIndicator } from './RedisHealthIndicator';
+import { RedisHealthIndicator } from '../redis/RedisHealthIndicator';
 
 @ApiTags('Health Check')
 @Controller('health')

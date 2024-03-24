@@ -5,6 +5,7 @@ import {
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
 import { ApiTags } from '@nestjs/swagger';
+import { RedisHealthIndicator } from '../redis/RedisHealthIndicator';
 
 @ApiTags('Health Check')
 @Controller('health')
@@ -12,11 +13,15 @@ export class HealthController {
   constructor(
     private health: HealthCheckService,
     private db: TypeOrmHealthIndicator,
+    private redisHealthIndicator: RedisHealthIndicator,
   ) {}
 
   @Get()
   @HealthCheck()
   check() {
-    return this.health.check([() => this.db.pingCheck('database')]);
+    return this.health.check([
+      () => this.db.pingCheck('database'),
+      () => this.redisHealthIndicator.isHealthy('redis-common'),
+    ]);
   }
 }

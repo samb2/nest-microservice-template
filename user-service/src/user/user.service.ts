@@ -12,6 +12,8 @@ import {
   ServiceNameEnum,
   expireCheck,
 } from '@irole/microservices';
+import { UpdateAvatarDto } from './dto/update-avatar.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -52,27 +54,73 @@ export class UserService {
     }
   }
 
-  async findAll() {
-    await this.userRepository.find({});
+  async updateAvatar(updateAvatarDto: UpdateAvatarDto, context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    try {
+      const user: User = await this.userRepository.findOne({
+        where: {
+          authId: updateAvatarDto.data.authId,
+        },
+      });
+      if (!user) {
+        throw new NotFoundException('user not found!');
+      }
+      let data: object = {
+        delete: false,
+        avatar: null,
+      };
+      if (user.avatar) {
+        data = {
+          delete: true,
+          avatar: user.avatar.replace('images/', ''),
+        };
+      }
+      user.avatar = updateAvatarDto.data.avatar;
+      await this.userRepository.save(user);
+      channel.ack(originalMsg);
+      return generateResMessage(
+        ServiceNameEnum.USER,
+        ServiceNameEnum.FILE,
+        data,
+        false,
+      );
+    } catch (e) {
+      await channel.reject(originalMsg, false);
+      return generateResMessage(
+        ServiceNameEnum.USER,
+        ServiceNameEnum.FILE,
+        null,
+        true,
+        {
+          message: e.message,
+          status: e.statusCode | 500,
+        },
+      );
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find({});
   }
 
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
+  findOne(id: string): Promise<User> {
+    return this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+  }
 
-  remove(id: number) {
+  update(id: string, updateUserDto: UpdateUserDto) {
+    return `This action updates a #${id} user`;
+  }
+
+  remove(id: string) {
     return `This action removes a #${id} user`;
   }
 
   async validateUserByAuthId(authId: string): Promise<User> {
-    const user = await this.userRepository.findOneBy({ authId });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
+    return this.userRepository.findOne({ where: { authId } });
   }
 }

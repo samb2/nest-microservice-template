@@ -10,6 +10,7 @@ import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket, BucketSchema } from '../minio/schemas/bucket.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServiceNameEnum } from '@irole/microservices';
+import { redisCommonFactory } from '../redis/redis-client.factory';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { ServiceNameEnum } from '@irole/microservices';
     MinioModule,
     ClientsModule.registerAsync([
       {
-        name: ServiceNameEnum.AUTH,
+        name: ServiceNameEnum.USER,
         imports: [ConfigModule],
         useFactory: async (configService: ConfigService) => ({
           transport: Transport.RMQ,
@@ -34,7 +35,7 @@ import { ServiceNameEnum } from '@irole/microservices';
                 'rabbitMq.host',
               )}:${configService.get<string>('rabbitMq.port')}`,
             ],
-            queue: `${configService.get<string>('rabbitMq.auth_queue')}`,
+            queue: `${configService.get<string>('rabbitMq.user_queue')}`,
             queueOptions: {
               durable: true,
             },
@@ -45,6 +46,11 @@ import { ServiceNameEnum } from '@irole/microservices';
     ]),
   ],
   controllers: [FileController],
-  providers: [FileService, FileRepository, BucketRepository],
+  providers: [
+    FileService,
+    FileRepository,
+    BucketRepository,
+    redisCommonFactory,
+  ],
 })
 export class FileModule {}

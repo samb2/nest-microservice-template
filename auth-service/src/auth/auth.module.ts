@@ -39,7 +39,7 @@ import {
             ],
             queue: `${configService.get<string>('rabbitMq.user_queue')}`,
             queueOptions: {
-              durable: false,
+              durable: true,
             },
           },
         }),
