@@ -1,11 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { CreateBucketDto } from './dto/create-bucket.dto';
-//import { MinioService as MinioPackageService } from 'nestjs-minio-client';
+import { Injectable } from '@nestjs/common';
 import { BucketRepository } from './bucket.repository';
 import { Bucket } from './schemas/bucket.schema';
 import { Client } from 'minio';
@@ -29,19 +22,6 @@ export class MinioService {
     });
   }
 
-  async createBucket(createBucketDto: CreateBucketDto): Promise<Bucket> {
-    try {
-      // Save the bucket object to the database
-      await this._createBucketIfNotExist(createBucketDto.name);
-      // Check if the bucket already exists, create it if it doesn't.
-      return await this.bucketRepo.insert({
-        name: createBucketDto.name,
-      });
-    } catch (e) {
-      throw e;
-    }
-  }
-
   async insertFile(
     bucketName: string,
     buketKey: string,
@@ -63,24 +43,6 @@ export class MinioService {
     return this.minioService.listBuckets();
   }
 
-  async removeBucket(bucketName: string): Promise<string> {
-    try {
-      const bucketExist: boolean = await this._bucketExists(bucketName);
-      if (!bucketExist) {
-        throw new NotFoundException('Bucket not found');
-      }
-      await this.minioService.removeBucket(bucketName).catch((error) => {
-        throw new InternalServerErrorException(error.message);
-      });
-      await this.bucketRepo.findOneAndDelete({
-        name: bucketName,
-      });
-      return `This action removes a ${bucketName} Bucket`;
-    } catch (e) {
-      throw e;
-    }
-  }
-
   async removeObject(bucketName: string, bucketKey: string): Promise<any> {
     await this.minioService.removeObject(
       bucketName, // bucket name
@@ -88,17 +50,14 @@ export class MinioService {
     );
   }
 
-  async _createBucketIfNotExist(bucketName: string): Promise<void> {
-    const bucketExist: boolean = await this._bucketExists(bucketName);
+  async createBucketIfNotExist(bucketName: string): Promise<boolean> {
+    const bucketExist: boolean =
+      await this.minioService.bucketExists(bucketName);
     if (bucketExist) {
-      throw new ConflictException(`Bucket ${bucketName} already exists`);
+      return bucketExist;
     }
     if (!bucketExist) {
       await this.minioService.makeBucket(bucketName);
     }
-  }
-
-  async _bucketExists(bucketName: string): Promise<boolean> {
-    return this.minioService.bucketExists(bucketName);
   }
 }

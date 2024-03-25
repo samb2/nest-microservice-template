@@ -2,9 +2,9 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 import { redisCommon } from '../redis.module';
 import { Role } from '../../role/entities/role.entity';
 import { RoleEnum } from '../../role/enum/role.enum';
-import { PermissionEnum } from '../../permission/enum/permission.enum';
 import { Permission } from '../../permission/entities/permission.entity';
 import { RolePermission } from '../../role/entities/role-permission.entity';
+import { PermissionEnum } from '@irole/microservices';
 
 export class RolePermission1710682402648 implements MigrationInterface {
   redisClient: any;
@@ -59,12 +59,13 @@ export class RolePermission1710682402648 implements MigrationInterface {
           redisAdminKey = role.id.toString();
           for (const permission of permissions) {
             if (
-              PermissionEnum.MANAGE_ROLE === permission.access ||
-              PermissionEnum.MANAGE_USER === permission.access ||
-              PermissionEnum.MANAGE_FILE === permission.access ||
-              PermissionEnum.MANAGE_PERMISSION === permission.access ||
-              PermissionEnum.MANAGE_PROFILE === permission.access ||
-              PermissionEnum.MANAGE_PROFILE_IMAGE === permission.access
+              PermissionEnum.MANAGE_ROLE === (permission.access as string) ||
+              PermissionEnum.MANAGE_USER === (permission.access as string) ||
+              PermissionEnum.MANAGE_FILE === (permission.access as string) ||
+              PermissionEnum.MANAGE_PERMISSION ===
+                (permission.access as string) ||
+              PermissionEnum.MANAGE_PROFILE === (permission.access as string) ||
+              PermissionEnum.MANAGE_AVATAR === (permission.access as string)
             ) {
               rolePermissions.push(
                 rolePermissionRepository.create({ role, permission }),
@@ -78,8 +79,8 @@ export class RolePermission1710682402648 implements MigrationInterface {
           redisUserKey = role.id.toString();
           for (const permission of permissions) {
             if (
-              PermissionEnum.MANAGE_PROFILE_IMAGE === permission.access ||
-              PermissionEnum.MANAGE_PROFILE === permission.access
+              PermissionEnum.MANAGE_AVATAR === (permission.access as string) ||
+              PermissionEnum.MANAGE_PROFILE === (permission.access as string)
             ) {
               rolePermissions.push(
                 rolePermissionRepository.create({ role, permission }),

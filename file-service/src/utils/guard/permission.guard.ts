@@ -29,14 +29,16 @@ export class PermissionGuard implements CanActivate {
     }
     const roles: number[] = req.roles;
     const userPermissions: string[] = [];
+    const promises: any[] = [];
     for (const role of roles) {
-      const redisPermissions: string = await this.redisCommon.get(
-        role.toString(),
-      );
-      const permissions: any[] = JSON.parse(redisPermissions);
-      for (const permission1 of permissions) {
-        userPermissions.push(permission1);
-      }
+      promises.push(this.redisCommon.get(role.toString()));
+    }
+    const redisPermissions: string[] = await Promise.all(promises);
+
+    const permissions: any[] = JSON.parse(redisPermissions[0]);
+
+    for (const permission1 of permissions) {
+      userPermissions.push(permission1);
     }
     const accessName: string = permission.split('_')[1];
     const manage: string = `manage_${accessName}`;

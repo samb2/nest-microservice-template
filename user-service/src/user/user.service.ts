@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  RequestTimeoutException,
-} from '@nestjs/common';
+import { Injectable, RequestTimeoutException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RmqContext } from '@nestjs/microservices';
 import { UserRepository } from './repository/user.repository';
@@ -12,7 +8,6 @@ import {
   ServiceNameEnum,
   expireCheck,
 } from '@irole/microservices';
-import { UpdateAvatarDto } from './dto/update-avatar.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -44,52 +39,6 @@ export class UserService {
       return generateResMessage(
         ServiceNameEnum.USER,
         ServiceNameEnum.AUTH,
-        null,
-        true,
-        {
-          message: e.message,
-          status: e.statusCode | 500,
-        },
-      );
-    }
-  }
-
-  async updateAvatar(updateAvatarDto: UpdateAvatarDto, context: RmqContext) {
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    try {
-      const user: User = await this.userRepository.findOne({
-        where: {
-          authId: updateAvatarDto.data.authId,
-        },
-      });
-      if (!user) {
-        throw new NotFoundException('user not found!');
-      }
-      let data: object = {
-        delete: false,
-        avatar: null,
-      };
-      if (user.avatar) {
-        data = {
-          delete: true,
-          avatar: user.avatar.replace('images/', ''),
-        };
-      }
-      user.avatar = updateAvatarDto.data.avatar;
-      await this.userRepository.save(user);
-      channel.ack(originalMsg);
-      return generateResMessage(
-        ServiceNameEnum.USER,
-        ServiceNameEnum.FILE,
-        data,
-        false,
-      );
-    } catch (e) {
-      await channel.reject(originalMsg, false);
-      return generateResMessage(
-        ServiceNameEnum.USER,
-        ServiceNameEnum.FILE,
         null,
         true,
         {

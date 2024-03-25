@@ -24,31 +24,35 @@ import {
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
 
-//import { Permissions } from '../utils/decorator/permissions.decorator';
-
 @ApiTags('file')
 @Controller('file')
+@ApiBearerAuth()
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
   @UseGuards(AccessTokenGuard, PermissionGuard)
-  @Permissions(PermissionEnum.CREATE_PROFILE_IMAGE)
-  @Post('/upload/profile')
-  @ApiBearerAuth()
+  @Permissions(PermissionEnum.CREATE_AVATAR)
+  @Post('/upload/avatar')
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UploadFileDto })
   @UseInterceptors(FileInterceptor('file'), ImageFilterInterceptor)
-  upload(@UploadedFile() file: Express.Multer.File, @Req() req: any): any {
-    return this.fileService.upload(file, req.user);
+  uploadAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: any,
+  ): any {
+    return this.fileService.uploadAvatar(file, req.user);
   }
 
+  @UseGuards(AccessTokenGuard, PermissionGuard)
+  @Permissions(PermissionEnum.READ_FILE)
   @UseGuards(AccessTokenGuard)
   @Get()
-  @ApiBearerAuth()
   findAll(): Promise<File[]> {
     return this.fileService.findAll();
   }
 
+  @UseGuards(AccessTokenGuard, PermissionGuard)
+  @Permissions(PermissionEnum.READ_FILE)
   @Get(':id')
   @UsePipes(new MongoIdValidationPipe())
   async findOne(@Param('id') id: string): Promise<File> {

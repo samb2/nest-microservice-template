@@ -20,10 +20,9 @@ import { PatternEnum } from '@irole/microservices';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
 import { PermissionEnum } from '../utils/permission.enum';
-import { Permissions } from '../utils/decorator/permission.decorator';
 import { User } from './entities/user.entity';
-import { UpdateAvatarDto } from './dto/update-avatar.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Permissions } from '@irole/microservices';
 
 @Controller('user')
 export class UserController {
@@ -35,14 +34,6 @@ export class UserController {
     @Ctx() context: RmqContext,
   ) {
     return this.userService.create(createUserDto, context);
-  }
-
-  @MessagePattern(PatternEnum.USER_IMAGE_UPLOADED)
-  updateAvatar(
-    @Payload() updateAvatarDto: UpdateAvatarDto,
-    @Ctx() context: RmqContext,
-  ) {
-    return this.userService.updateAvatar(updateAvatarDto, context);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)

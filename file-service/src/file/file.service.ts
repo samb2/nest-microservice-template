@@ -34,19 +34,19 @@ export class FileService {
   }
 
   //todo add transaction for mongo
-  async upload(image: any, user: any): Promise<any> {
+  async uploadAvatar(image: any, user: any): Promise<any> {
     const metaData: object = {
       'content-type': image.mimetype,
     };
     const extension: string = path.parse(image.originalname).ext;
     const filename: string = `${uuidV4()}`;
-    const bucketKey: string = `profiles/${filename}${extension}`;
+    const bucketKey: string = `${filename}${extension}`;
 
     const bucket: Bucket = await this.bucketRepo.findOne({
-      name: BucketEnum.IMAGES,
+      name: BucketEnum.AVATAR,
     });
     if (!bucket) {
-      throw new Error(`Bucket ${BucketEnum.IMAGES} not found`);
+      throw new Error(`Bucket ${BucketEnum.AVATAR} not found`);
     }
     try {
       // Save to Minio
@@ -78,15 +78,16 @@ export class FileService {
       );
       const result: MicroResInterface = await sendMicroMessage(
         this.userClient,
-        PatternEnum.USER_IMAGE_UPLOADED,
+        PatternEnum.USER_AVATAR_UPLOADED,
         message,
       );
 
       if (result.data.delete) {
         await this.minioService.removeObject(
-          BucketEnum.IMAGES,
+          BucketEnum.AVATAR,
           result.data.avatar,
         );
+        await this.fileRepo.findOneAndDelete({ key: result.data.avatar });
       }
       if (result.error) {
         throw new InternalServerErrorException(result.reason.message);
@@ -105,24 +106,49 @@ export class FileService {
     );
   }
 
-  async findOne(id: any): Promise<File> {
+  async findOne(id: string): Promise<File> {
     return this._fileExists(id);
   }
 
   async remove(id: any): Promise<string> {
-    const file: File = await this._fileExists(id);
-    await this.minioService.removeObject(file.bucket['name'], file.key);
-    await this.fileRepo.findByIdAndDelete(id);
-    return `This action removes a #${id} file`;
+    try {
+      const file: File = await this._fileExists(id);
+      const bucketName = file.bucket['name'];
+
+      if (bucketName === BucketEnum.AVATAR) {
+        await this.minioService.removeObject(bucketName, file.key);
+        await this.fileRepo.findByIdAndDelete(id);
+        // send to user service
+        const payload = {
+          authId: file.uploadedBy,
+          avatar: `${file.key}`,
+        };
+        const message: MicroSendInterface = generateMessage(
+          ServiceNameEnum.FILE,
+          ServiceNameEnum.USER,
+          payload,
+        );
+        const result: MicroResInterface = await sendMicroMessage(
+          this.userClient,
+          PatternEnum.USER_AVATAR_DELETED,
+          message,
+        );
+        if (result.error) {
+          throw new InternalServerErrorException(result.reason.message);
+        }
+      }
+      return `This action removes a #${id} file`;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 
   async _fileExists(id: any): Promise<File> {
     const file: File = await this.fileRepo.findById(
       id,
-      { key: true, name: true, path: true, bucket: true },
+      { key: true, name: true, path: true, bucket: true, uploadedBy: true },
       {
         populate: 'bucket',
-        lean: true,
       },
     );
     if (!file) {
