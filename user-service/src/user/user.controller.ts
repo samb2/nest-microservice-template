@@ -16,10 +16,9 @@ import {
 } from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { PatternEnum } from '@irole/microservices';
+import { PatternEnum, PermissionEnum } from '@irole/microservices';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
-import { PermissionEnum } from '../utils/permission.enum';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Permissions } from '@irole/microservices';

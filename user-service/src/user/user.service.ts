@@ -70,6 +70,8 @@ export class UserService {
   }
 
   async validateUserByAuthId(authId: string): Promise<User> {
-    return this.userRepository.findOne({ where: { authId } });
+    return this.userRepository.findOne({
+      where: { authId, isDelete: false, isActive: true },
+    });
   }
 }

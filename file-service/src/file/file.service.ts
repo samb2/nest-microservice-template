@@ -7,7 +7,7 @@ import {
 import { v4 as uuidV4 } from 'uuid';
 import * as path from 'path';
 import { MinioService } from '../minio/minio.service';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RmqContext } from '@nestjs/microservices';
 import { FileRepository } from './file.repository';
 import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket } from '../minio/schemas/bucket.schema';
@@ -15,12 +15,14 @@ import { File } from './schemas/file.schema';
 import { BucketEnum } from '../minio/bucket.enum';
 import {
   generateMessage,
+  generateResMessage,
   MicroResInterface,
   MicroSendInterface,
   PatternEnum,
   sendMicroMessage,
   ServiceNameEnum,
 } from '@irole/microservices';
+import { DeleteAvatarDto } from './dto/delete-avatar.dto';
 
 @Injectable()
 export class FileService {
@@ -31,6 +33,42 @@ export class FileService {
     private readonly bucketRepo: BucketRepository,
   ) {
     this.userClient.connect().then();
+  }
+
+  async microDeleteAvatar(
+    deleteAvatarDto: DeleteAvatarDto,
+    context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    try {
+      await this.minioService.removeObject(
+        BucketEnum.AVATAR,
+        deleteAvatarDto.data.avatar,
+      );
+      await this.fileRepo.findOneAndDelete({
+        key: deleteAvatarDto.data.avatar,
+      });
+      channel.ack(originalMsg);
+      return generateResMessage(
+        ServiceNameEnum.FILE,
+        ServiceNameEnum.USER,
+        'avatar deleted',
+        false,
+      );
+    } catch (e) {
+      await channel.reject(originalMsg, false);
+      return generateResMessage(
+        ServiceNameEnum.FILE,
+        ServiceNameEnum.USER,
+        null,
+        true,
+        {
+          message: e.message,
+          status: e.statusCode | 500,
+        },
+      );
+    }
   }
 
   //todo add transaction for mongo
@@ -114,10 +152,9 @@ export class FileService {
     try {
       const file: File = await this._fileExists(id);
       const bucketName = file.bucket['name'];
-
+      await this.minioService.removeObject(bucketName, file.key);
+      await this.fileRepo.findByIdAndDelete(id);
       if (bucketName === BucketEnum.AVATAR) {
-        await this.minioService.removeObject(bucketName, file.key);
-        await this.fileRepo.findByIdAndDelete(id);
         // send to user service
         const payload = {
           authId: file.uploadedBy,

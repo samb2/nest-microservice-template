@@ -1,14 +1,13 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
-  Param,
   Delete,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import {
   Ctx,
@@ -16,10 +15,16 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { PatternEnum } from '@irole/microservices';
+import { PatternEnum, PermissionEnum, Permissions } from '@irole/microservices';
 import { UpdateAvatarDto } from './dto/update-avatar.dto';
 import { DeleteAvatarDto } from './dto/delete-avatar.dto';
+import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
+import { PermissionGuard } from '../utils/guard/permission.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { User } from '../user/entities/user.entity';
 
+@ApiTags('profile')
+@ApiBearerAuth()
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
@@ -29,39 +34,38 @@ export class ProfileController {
     @Payload() updateAvatarDto: UpdateAvatarDto,
     @Ctx() context: RmqContext,
   ) {
-    return this.profileService.updateAvatar(updateAvatarDto, context);
+    return this.profileService.microUpdateAvatar(updateAvatarDto, context);
   }
 
   @MessagePattern(PatternEnum.USER_AVATAR_DELETED)
-  deleteAvatar(
+  microDeleteAvatar(
     @Payload() deleteAvatarDto: DeleteAvatarDto,
     @Ctx() context: RmqContext,
   ) {
-    return this.profileService.deleteAvatar(deleteAvatarDto, context);
+    return this.profileService.microDeleteAvatar(deleteAvatarDto, context);
   }
 
-  @Post()
-  create(@Body() createProfileDto: CreateProfileDto) {
-    return this.profileService.create(createProfileDto);
-  }
-
+  @UseGuards(AccessTokenGuard, PermissionGuard)
+  @Permissions(PermissionEnum.READ_PROFILE)
   @Get()
-  findAll() {
-    return this.profileService.findAll();
+  findOne(@Req() req: any): Promise<User> {
+    return this.profileService.findOne(req.user.id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.profileService.findOne(id);
+  @UseGuards(AccessTokenGuard, PermissionGuard)
+  @Permissions(PermissionEnum.UPDATE_PROFILE)
+  @Patch()
+  update(
+    @Body() updateProfileDto: UpdateProfileDto,
+    @Req() req: any,
+  ): Promise<string> {
+    return this.profileService.update(updateProfileDto, req.user);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.profileService.update(+id, updateProfileDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.profileService.remove(+id);
+  @UseGuards(AccessTokenGuard, PermissionGuard)
+  @Permissions(PermissionEnum.DELETE_AVATAR)
+  @Delete('/avatar')
+  deleteAvatar(@Req() req: any): Promise<string> {
+    return this.profileService.deleteAvatar(req.user.id, req.user.avatar);
   }
 }

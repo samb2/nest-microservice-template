@@ -17,18 +17,28 @@ import { UploadFileDto } from './dto/upload-file.dto';
 import { ImageFilterInterceptor } from './interceptors/image-filter.interceptor';
 import { File } from './schemas/file.schema';
 import {
-  MongoIdValidationPipe,
+  MongoIdValidationPipe, PatternEnum,
   PermissionEnum,
-  Permissions,
-} from '@irole/microservices';
+  Permissions
+} from "@irole/microservices";
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
+import { Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
+import { DeleteAvatarDto } from "./dto/delete-avatar.dto";
 
 @ApiTags('file')
 @Controller('file')
 @ApiBearerAuth()
 export class FileController {
   constructor(private readonly fileService: FileService) {}
+
+  @MessagePattern(PatternEnum.USER_AVATAR_DELETED)
+  microDeleteAvatar(
+    @Payload() deleteAvatarDto: DeleteAvatarDto,
+    @Ctx() context: RmqContext,
+  ) {
+    return this.fileService.microDeleteAvatar(deleteAvatarDto, context);
+  }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.CREATE_AVATAR)
