@@ -340,7 +340,7 @@ export class AuthService implements IAuthServiceInterface {
       default:
         throw new Error('Invalid token type');
     }
-    const expiresIn: string = type === TokenTypeEnum.REFRESH ? '30d' : '1d';
+    const expiresIn: string = type === TokenTypeEnum.REFRESH ? '30d' : '30m';
     return this.jwtService.sign(payload, { secret: secretKey, expiresIn });
   }
 }

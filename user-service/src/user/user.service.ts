@@ -1,4 +1,9 @@
-import { Injectable, RequestTimeoutException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  RequestTimeoutException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RmqContext } from '@nestjs/microservices';
 import { UserRepository } from './repository/user.repository';
@@ -9,6 +14,9 @@ import {
   expireCheck,
 } from '@irole/microservices';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PageMetaDto } from './dto/page-meta.dto';
+import { FindUsersDto } from './dto/find-users.dto';
+import { UpdateUserResDto } from './dto/response/update-user-res.dto';
 
 @Injectable()
 export class UserService {
@@ -49,20 +57,87 @@ export class UserService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find({});
+  async findAll(
+    findUsersDto?: FindUsersDto,
+  ): Promise<{ users: User[]; pageMeta: PageMetaDto }> {
+    const { is_active, admin, is_delete, sort, sortField, take, skip } =
+      findUsersDto;
+    const whereConditions: any = {};
+
+    if (is_delete !== undefined) {
+      whereConditions.isDelete = is_delete;
+    }
+    if (is_active !== undefined) {
+      whereConditions.isActive = is_active;
+    }
+    if (admin !== undefined) {
+      whereConditions.admin = admin;
+    }
+
+    const orderField: string = sortField || 'createdAt';
+    const orderDirection: string = sort || 'ASC';
+
+    const [users, itemCount] = await this.userRepository.findAndCount({
+      where: whereConditions,
+      skip,
+      take,
+      order: {
+        [orderField]: orderDirection,
+      },
+    });
+
+    const pageMeta = new PageMetaDto({
+      findUsersDto,
+      itemCount,
+    });
+
+    return { users, pageMeta };
   }
 
-  findOne(id: string): Promise<User> {
-    return this.userRepository.findOne({
+  async findOne(id: string): Promise<User> {
+    const user: User = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        avatar: true,
+        email: true,
+        isActive: true,
+        isDelete: true,
+        admin: true,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('user not found!');
+    }
+    return user;
+  }
+
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    isSuperAdmin: boolean,
+  ): Promise<UpdateUserResDto> {
+    const user: User = await this.userRepository.findOne({
       where: {
         id,
       },
     });
-  }
+    if (!user) {
+      throw new NotFoundException('user not found!');
+    }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+    if (updateUserDto.superAdmin && !isSuperAdmin) {
+      delete updateUserDto.superAdmin;
+      throw new UnauthorizedException();
+    }
+    Object.assign(user, updateUserDto);
+    await this.userRepository.save(user);
+    return { message: 'The user has been successfully updated.' };
   }
 
   remove(id: string) {

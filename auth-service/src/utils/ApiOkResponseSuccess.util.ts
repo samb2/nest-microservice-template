@@ -1,5 +1,6 @@
 import { applyDecorators, Type } from '@nestjs/common';
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
+import { ServiceNameEnum } from '@irole/microservices';
 
 const statusMessages = {
   200: 'OK',
@@ -12,7 +13,7 @@ const statusMessages = {
 };
 
 class SuccessResponseDto<T> {
-  from: string = 'AUTH-SERVICE';
+  from: string = ServiceNameEnum.AUTH;
   success: boolean;
   statusCode: string;
   message: string;
@@ -34,7 +35,7 @@ export const ApiOkResponseSuccess = <DataDto extends Type<unknown>>(
             properties: {
               from: {
                 type: 'string',
-                default: 'AUTH-SERVICE',
+                default: ServiceNameEnum.AUTH,
               },
               success: {
                 type: 'true',

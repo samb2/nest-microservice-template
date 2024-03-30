@@ -17,14 +17,20 @@ import { UploadFileDto } from './dto/upload-file.dto';
 import { ImageFilterInterceptor } from './interceptors/image-filter.interceptor';
 import { File } from './schemas/file.schema';
 import {
-  MongoIdValidationPipe, PatternEnum,
+  MongoIdValidationPipe,
+  PatternEnum,
   PermissionEnum,
-  Permissions
-} from "@irole/microservices";
+  Permissions,
+} from '@irole/microservices';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
-import { Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
-import { DeleteAvatarDto } from "./dto/delete-avatar.dto";
+import {
+  Ctx,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
+import { DeleteAvatarDto } from './dto/delete-avatar.dto';
 
 @ApiTags('file')
 @Controller('file')
