@@ -2,13 +2,11 @@ import {
   Controller,
   Get,
   Param,
-  Delete,
   UseGuards,
   Patch,
   Body,
   Query,
   UsePipes,
-  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
@@ -94,18 +92,7 @@ export class UserController {
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Req() req: any,
   ): Promise<UpdateUserResDto> {
-    return this.userService.update(id, updateUserDto, req.user.superAdmin);
-  }
-
-  @UseGuards(AccessTokenGuard, PermissionGuard)
-  @Permissions(PermissionEnum.DELETE_USER)
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete a user' })
-  @ApiBadRequestResponse({ description: 'Bad Request!' })
-  @UsePipes(new UuidValidationPipe())
-  remove(@Param('id') id: string) {
-    return this.userService.remove(id);
+    return this.userService.update(id, updateUserDto);
   }
 }

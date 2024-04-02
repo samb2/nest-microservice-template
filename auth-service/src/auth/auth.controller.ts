@@ -37,11 +37,20 @@ import {
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { RefreshTokenGuard } from '../utils/guard/jwt-refresh.guard';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('auth service')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @MessagePattern(PatternEnum.AUTH_UPDATE_USER)
+  createUser(
+    @Payload() updateUserDto: UpdateUserDto,
+    @Ctx() context: RmqContext,
+  ): Promise<MicroResInterface> {
+    return this.authService.updateUser(updateUserDto, context);
+  }
 
   @Post('register')
   @HttpCode(201)

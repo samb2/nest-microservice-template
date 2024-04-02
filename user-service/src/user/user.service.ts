@@ -1,17 +1,23 @@
 import {
+  Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   RequestTimeoutException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { RmqContext } from '@nestjs/microservices';
+import { ClientProxy, RmqContext } from '@nestjs/microservices';
 import { UserRepository } from './repository/user.repository';
 import { User } from './entities/user.entity';
 import {
   generateResMessage,
   ServiceNameEnum,
   expireCheck,
+  MicroSendInterface,
+  generateMessage,
+  MicroResInterface,
+  PatternEnum,
+  sendMicroMessage,
 } from '@irole/microservices';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PageMetaDto } from './dto/page-meta.dto';
@@ -20,7 +26,10 @@ import { UpdateUserResDto } from './dto/response/update-user-res.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   async create(createUserDto: CreateUserDto, context: RmqContext) {
     const channel = context.getChannelRef();
@@ -79,6 +88,17 @@ export class UserService {
 
     const [users, itemCount] = await this.userRepository.findAndCount({
       where: whereConditions,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        avatar: true,
+        email: true,
+        isActive: true,
+        isDelete: true,
+        admin: true,
+      },
       skip,
       take,
       order: {
@@ -120,7 +140,6 @@ export class UserService {
   async update(
     id: string,
     updateUserDto: UpdateUserDto,
-    isSuperAdmin: boolean,
   ): Promise<UpdateUserResDto> {
     const user: User = await this.userRepository.findOne({
       where: {
@@ -130,18 +149,32 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('user not found!');
     }
-
-    if (updateUserDto.superAdmin && !isSuperAdmin) {
-      delete updateUserDto.superAdmin;
-      throw new UnauthorizedException();
-    }
     Object.assign(user, updateUserDto);
+    //---------------------------------------
+
+    const payload = {
+      authId: user.authId,
+      updateUserDto,
+    };
+
+    const message: MicroSendInterface = generateMessage(
+      ServiceNameEnum.USER,
+      ServiceNameEnum.AUTH,
+      payload,
+    );
+
+    const result: MicroResInterface = await sendMicroMessage(
+      this.authClient,
+      PatternEnum.AUTH_UPDATE_USER,
+      message,
+    );
+
+    if (result.error) {
+      throw new InternalServerErrorException(result.reason.message);
+    }
+
     await this.userRepository.save(user);
     return { message: 'The user has been successfully updated.' };
-  }
-
-  remove(id: string) {
-    return `This action removes a #${id} user`;
   }
 
   async validateUserByAuthId(authId: string): Promise<User> {

@@ -24,7 +24,13 @@ import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ResetPasswordResDto } from './dto/response/resetPasswordRes.dto';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { IAuthServiceInterface } from './interfaces/IAuthService.interface';
-import { ClientProxy, RmqContext } from '@nestjs/microservices';
+import {
+  ClientProxy,
+  Ctx,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { createTransaction } from '../utils/create-transaction.util';
 import {
   generateMessage,
@@ -41,6 +47,7 @@ import Redis from 'ioredis';
 import { UsersRoles } from './entities/users-roles.entity';
 import { Role } from '../role/entities/role.entity';
 import { RoleEnum } from '../role/enum/role.enum';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
@@ -319,6 +326,40 @@ export class AuthService implements IAuthServiceInterface {
         message: e.message,
         status: 500,
       });
+    }
+  }
+
+  async updateUser(updateUserDto: UpdateUserDto, context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    try {
+      await this.userRepository.update(
+        {
+          id: updateUserDto.data.authId,
+        },
+        {
+          ...updateUserDto.data.updateUserDto,
+        },
+      );
+      channel.ack(originalMsg);
+      return generateResMessage(
+        ServiceNameEnum.AUTH,
+        ServiceNameEnum.USER,
+        'user updated',
+        false,
+      );
+    } catch (e) {
+      await channel.reject(originalMsg, false);
+      return generateResMessage(
+        ServiceNameEnum.AUTH,
+        ServiceNameEnum.USER,
+        null,
+        true,
+        {
+          message: e.message,
+          status: e.statusCode | 500,
+        },
+      );
     }
   }
 

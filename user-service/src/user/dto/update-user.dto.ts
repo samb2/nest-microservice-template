@@ -23,8 +23,4 @@ export class UpdateUserDto {
   @ApiProperty({ type: Boolean, default: false })
   @IsOptional()
   admin?: boolean;
-
-  @ApiProperty({ type: Boolean, default: false })
-  @IsOptional()
-  superAdmin?: boolean;
 }
