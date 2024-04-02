@@ -6,8 +6,3 @@ export class UpdateUserDto {
   data: any;
   ttl: number;
 }
-
-class UserInfo {
-  email: string;
-  authId: string;
-}

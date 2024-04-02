@@ -22,6 +22,7 @@ import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from '../user/entities/user.entity';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @ApiTags('profile')
 @ApiBearerAuth()
@@ -60,6 +61,16 @@ export class ProfileController {
     @Req() req: any,
   ): Promise<string> {
     return this.profileService.update(updateProfileDto, req.user);
+  }
+
+  @UseGuards(AccessTokenGuard, PermissionGuard)
+  @Permissions(PermissionEnum.UPDATE_PROFILE)
+  @Patch('/password')
+  updatePassword(
+    @Body() updatePasswordDto: UpdatePasswordDto,
+    @Req() req: any,
+  ): Promise<string> {
+    return this.profileService.updatePassword(updatePasswordDto, req.user);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)

@@ -38,6 +38,7 @@ import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { RefreshTokenGuard } from '../utils/guard/jwt-refresh.guard';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
 @ApiTags('auth service')
 @Controller('auth')
@@ -50,6 +51,14 @@ export class AuthController {
     @Ctx() context: RmqContext,
   ): Promise<MicroResInterface> {
     return this.authService.updateUser(updateUserDto, context);
+  }
+
+  @MessagePattern(PatternEnum.AUTH_UPDATE_PASSWORD)
+  updatePassword(
+    @Payload() updatePasswordUserDto: UpdateUserPasswordDto,
+    @Ctx() context: RmqContext,
+  ): Promise<MicroResInterface> {
+    return this.authService.updatePassword(updatePasswordUserDto, context);
   }
 
   @Post('register')

@@ -19,12 +19,14 @@ import {
 import { UserRepository } from '../user/repository/user.repository';
 import { DeleteAvatarDto } from './dto/delete-avatar.dto';
 import { UpdateAvatarDto } from './dto/update-avatar.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Injectable()
 export class ProfileService {
   constructor(
     private readonly userRepository: UserRepository,
     @Inject(ServiceNameEnum.FILE) private readonly fileClient: ClientProxy,
+    @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
   ) {}
 
   async microUpdateAvatar(
@@ -148,6 +150,33 @@ export class ProfileService {
       },
     );
     return `profile update successfully`;
+  }
+
+  async updatePassword(
+    updateProfileDto: UpdatePasswordDto,
+    user: User,
+  ): Promise<string> {
+    // send to auth service
+    const payload = {
+      ...updateProfileDto,
+      authId: user.authId,
+    };
+
+    const message: MicroSendInterface = generateMessage(
+      ServiceNameEnum.USER,
+      ServiceNameEnum.AUTH,
+      payload,
+    );
+
+    const result: MicroResInterface = await sendMicroMessage(
+      this.authClient,
+      PatternEnum.AUTH_UPDATE_PASSWORD,
+      message,
+    );
+    if (result.error) {
+      throw new InternalServerErrorException(result.reason.message);
+    }
+    return `profile password update successfully`;
   }
 
   async deleteAvatar(id: string, avatar: string) {

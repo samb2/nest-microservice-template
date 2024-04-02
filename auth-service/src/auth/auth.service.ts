@@ -24,13 +24,7 @@ import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ResetPasswordResDto } from './dto/response/resetPasswordRes.dto';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
 import { IAuthServiceInterface } from './interfaces/IAuthService.interface';
-import {
-  ClientProxy,
-  Ctx,
-  MessagePattern,
-  Payload,
-  RmqContext,
-} from '@nestjs/microservices';
+import { ClientProxy, RmqContext } from '@nestjs/microservices';
 import { createTransaction } from '../utils/create-transaction.util';
 import {
   generateMessage,
@@ -48,6 +42,7 @@ import { UsersRoles } from './entities/users-roles.entity';
 import { Role } from '../role/entities/role.entity';
 import { RoleEnum } from '../role/enum/role.enum';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
@@ -346,6 +341,51 @@ export class AuthService implements IAuthServiceInterface {
         ServiceNameEnum.AUTH,
         ServiceNameEnum.USER,
         'user updated',
+        false,
+      );
+    } catch (e) {
+      await channel.reject(originalMsg, false);
+      return generateResMessage(
+        ServiceNameEnum.AUTH,
+        ServiceNameEnum.USER,
+        null,
+        true,
+        {
+          message: e.message,
+          status: e.statusCode | 500,
+        },
+      );
+    }
+  }
+
+  async updatePassword(
+    updateUserPasswordDto: UpdateUserPasswordDto,
+    context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    try {
+      const user: User = await this.userRepository.findOne({
+        where: { id: updateUserPasswordDto.data.authId },
+      });
+
+      const compare: boolean = await comparePassword(
+        updateUserPasswordDto.data.oldPassword,
+        user.password,
+      );
+      if (!compare) {
+        throw new Error('your old password is incorrect');
+      }
+
+      user.password = await bcryptPassword(
+        updateUserPasswordDto.data.newPassword,
+      );
+      await this.userRepository.save(user);
+      channel.ack(originalMsg);
+      return generateResMessage(
+        ServiceNameEnum.AUTH,
+        ServiceNameEnum.USER,
+        'user password updated',
         false,
       );
     } catch (e) {
