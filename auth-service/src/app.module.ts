@@ -16,6 +16,7 @@ import {
   redisRefreshFactory,
 } from './redis/redis-client.factory';
 import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
+import { TokenModule } from './token/token.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
     AuthModule,
     RoleModule,
     PermissionModule,
+    TokenModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -14,11 +14,13 @@ export class RolePermission {
   @PrimaryGeneratedColumn('uuid') // Specify 'uuid' type for the primary key
   id: string;
 
-  @ManyToOne(() => Role, (role) => role.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Role, (role) => role.rolePermissions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'role_id' })
   role: Role;
 
-  @ManyToOne(() => Permission, (permission) => permission.id, {
+  @ManyToOne(() => Permission, (permission) => permission.rolePermissions, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'permission_id' })

@@ -1,5 +1,4 @@
 import { User } from '../entities/user.entity';
-import { TokenTypeEnum } from '../enum/token-type.enum';
 import { RefreshResDto } from '../dto/response/refreshRes.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { RegisterResDto } from '../dto/response/registerRes.dto';
@@ -31,5 +30,5 @@ export interface IAuthServiceInterface {
 
   validateUserByEmail(email: string): Promise<User | undefined>;
 
-  generateToken(payload: object, type: TokenTypeEnum): string;
+  //generateToken(payload: object, type: TokenTypeEnum): string;
 }

@@ -1,70 +1,25 @@
 import {
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  RequestTimeoutException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { ClientProxy, RmqContext } from '@nestjs/microservices';
-import { UserRepository } from './repository/user.repository';
 import { User } from './entities/user.entity';
-import {
-  generateResMessage,
-  ServiceNameEnum,
-  expireCheck,
-  MicroSendInterface,
-  generateMessage,
-  MicroResInterface,
-  PatternEnum,
-  sendMicroMessage,
-} from '@irole/microservices';
+import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PageMetaDto } from './dto/page-meta.dto';
 import { FindUsersDto } from './dto/find-users.dto';
 import { UpdateUserResDto } from './dto/response/update-user-res.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserMicroserviceService } from './microservice/user-microservice.service';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
-    private readonly userRepository: UserRepository,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly userMicroserviceService: UserMicroserviceService,
   ) {}
-
-  async create(createUserDto: CreateUserDto, context: RmqContext) {
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    try {
-      if (!expireCheck(createUserDto.ttl)) {
-        throw new RequestTimeoutException('Token Expired');
-      }
-      const user = this.userRepository.create({
-        email: createUserDto.data.email,
-        authId: createUserDto.data.authId,
-      });
-
-      await this.userRepository.save(user);
-      channel.ack(originalMsg);
-      return generateResMessage(
-        ServiceNameEnum.USER,
-        ServiceNameEnum.AUTH,
-        'user created',
-        false,
-      );
-    } catch (e) {
-      await channel.reject(originalMsg, false);
-      return generateResMessage(
-        ServiceNameEnum.USER,
-        ServiceNameEnum.AUTH,
-        null,
-        true,
-        {
-          message: e.message,
-          status: e.statusCode | 500,
-        },
-      );
-    }
-  }
 
   async findAll(
     findUsersDto?: FindUsersDto,
@@ -93,6 +48,7 @@ export class UserService {
         firstName: true,
         lastName: true,
         createdAt: true,
+        authId: true,
         avatar: true,
         email: true,
         isActive: true,
@@ -157,17 +113,11 @@ export class UserService {
       updateUserDto,
     };
 
-    const message: MicroSendInterface = generateMessage(
-      ServiceNameEnum.USER,
-      ServiceNameEnum.AUTH,
-      payload,
-    );
-
-    const result: MicroResInterface = await sendMicroMessage(
-      this.authClient,
-      PatternEnum.AUTH_UPDATE_USER,
-      message,
-    );
+    const result: MicroResInterface =
+      await this.userMicroserviceService.sendToAuthService(
+        PatternEnum.AUTH_UPDATE_USER,
+        payload,
+      );
 
     if (result.error) {
       throw new InternalServerErrorException(result.reason.message);

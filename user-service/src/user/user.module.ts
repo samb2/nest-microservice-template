@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserRepository } from './repository/user.repository';
 import { User } from './entities/user.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
@@ -11,6 +10,8 @@ import { redisCommonFactory } from '../redis/redis-client.factory';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ServiceNameEnum } from '@irole/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UserMicroserviceService } from './microservice/user-microservice.service';
+import { UserMicroserviceController } from './microservice/user-microservice.controller';
 
 @Module({
   imports: [
@@ -43,10 +44,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       },
     ]),
   ],
-  controllers: [UserController],
+  controllers: [UserController, UserMicroserviceController],
   providers: [
     UserService,
-    UserRepository,
+    UserMicroserviceService,
     AccessTokenStrategy,
     redisCommonFactory,
   ],

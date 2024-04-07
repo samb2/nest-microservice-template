@@ -27,39 +27,13 @@ import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { ResetPasswordResDto } from './dto/response/resetPasswordRes.dto';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { RefreshResDto } from './dto/response/refreshRes.dto';
-
-import {
-  Ctx,
-  MessagePattern,
-  Payload,
-  RmqContext,
-} from '@nestjs/microservices';
-import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { RefreshTokenGuard } from '../utils/guard/jwt-refresh.guard';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
 @ApiTags('auth service')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @MessagePattern(PatternEnum.AUTH_UPDATE_USER)
-  createUser(
-    @Payload() updateUserDto: UpdateUserDto,
-    @Ctx() context: RmqContext,
-  ): Promise<MicroResInterface> {
-    return this.authService.updateUser(updateUserDto, context);
-  }
-
-  @MessagePattern(PatternEnum.AUTH_UPDATE_PASSWORD)
-  updatePassword(
-    @Payload() updatePasswordUserDto: UpdateUserPasswordDto,
-    @Ctx() context: RmqContext,
-  ): Promise<MicroResInterface> {
-    return this.authService.updatePassword(updatePasswordUserDto, context);
-  }
 
   @Post('register')
   @HttpCode(201)
@@ -122,13 +96,5 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async logout(@Req() req: any): Promise<object> {
     return this.authService.logout(req.user);
-  }
-
-  @MessagePattern(PatternEnum.AUTH_VERIFY_TOKEN)
-  public async getUserById(
-    @Payload() payload: MicroResInterface,
-    @Ctx() context: RmqContext,
-  ): Promise<any> {
-    return this.authService.verifyToken(payload, context);
   }
 }

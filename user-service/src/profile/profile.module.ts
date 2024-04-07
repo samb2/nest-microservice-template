@@ -3,11 +3,12 @@ import { ProfileService } from './profile.service';
 import { ProfileController } from './profile.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
-import { UserRepository } from '../user/repository/user.repository';
 import { redisCommonFactory } from '../redis/redis-client.factory';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ServiceNameEnum } from '@irole/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ProfileMicroserviceService } from './microservice/profile-microservice.service';
+import { ProfileMicroserviceController } from './microservice/profile-microservice.controller';
 
 @Module({
   imports: [
@@ -63,7 +64,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       },
     ]),
   ],
-  controllers: [ProfileController],
-  providers: [ProfileService, UserRepository, redisCommonFactory],
+  controllers: [ProfileController, ProfileMicroserviceController],
+  providers: [ProfileService, ProfileMicroserviceService, redisCommonFactory],
 })
 export class ProfileModule {}

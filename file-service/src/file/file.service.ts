@@ -7,69 +7,22 @@ import {
 import { v4 as uuidV4 } from 'uuid';
 import * as path from 'path';
 import { MinioService } from '../minio/minio.service';
-import { ClientProxy, RmqContext } from '@nestjs/microservices';
 import { FileRepository } from './file.repository';
 import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket } from '../minio/schemas/bucket.schema';
 import { File } from './schemas/file.schema';
 import { BucketEnum } from '../minio/bucket.enum';
-import {
-  generateMessage,
-  generateResMessage,
-  MicroResInterface,
-  MicroSendInterface,
-  PatternEnum,
-  sendMicroMessage,
-  ServiceNameEnum,
-} from '@irole/microservices';
-import { DeleteAvatarDto } from './dto/delete-avatar.dto';
+import { MicroResInterface, PatternEnum } from '@irole/microservices';
+import { FileMicroserviceService } from './microservice/file-microservice.service';
 
 @Injectable()
 export class FileService {
   constructor(
-    @Inject(ServiceNameEnum.USER) private readonly userClient: ClientProxy,
     @Inject(MinioService) private readonly minioService: MinioService,
     private readonly fileRepo: FileRepository,
     private readonly bucketRepo: BucketRepository,
-  ) {
-    this.userClient.connect().then();
-  }
-
-  async microDeleteAvatar(
-    deleteAvatarDto: DeleteAvatarDto,
-    context: RmqContext,
-  ) {
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    try {
-      await this.minioService.removeObject(
-        BucketEnum.AVATAR,
-        deleteAvatarDto.data.avatar,
-      );
-      await this.fileRepo.findOneAndDelete({
-        key: deleteAvatarDto.data.avatar,
-      });
-      channel.ack(originalMsg);
-      return generateResMessage(
-        ServiceNameEnum.FILE,
-        ServiceNameEnum.USER,
-        'avatar deleted',
-        false,
-      );
-    } catch (e) {
-      await channel.reject(originalMsg, false);
-      return generateResMessage(
-        ServiceNameEnum.FILE,
-        ServiceNameEnum.USER,
-        null,
-        true,
-        {
-          message: e.message,
-          status: e.statusCode | 500,
-        },
-      );
-    }
-  }
+    private readonly fileMicroserviceService: FileMicroserviceService,
+  ) {}
 
   //todo add transaction for mongo
   async uploadAvatar(image: any, user: any): Promise<any> {
@@ -109,16 +62,11 @@ export class FileService {
         authId: user.id,
         avatar: `${bucket.name}/${bucketKey}`,
       };
-      const message: MicroSendInterface = generateMessage(
-        ServiceNameEnum.FILE,
-        ServiceNameEnum.USER,
-        payload,
-      );
-      const result: MicroResInterface = await sendMicroMessage(
-        this.userClient,
-        PatternEnum.USER_AVATAR_UPLOADED,
-        message,
-      );
+      const result: MicroResInterface =
+        await this.fileMicroserviceService.sendToUserService(
+          PatternEnum.USER_AVATAR_UPLOADED,
+          payload,
+        );
 
       if (result.data.delete) {
         await this.minioService.removeObject(
@@ -160,16 +108,11 @@ export class FileService {
           authId: file.uploadedBy,
           avatar: `${file.key}`,
         };
-        const message: MicroSendInterface = generateMessage(
-          ServiceNameEnum.FILE,
-          ServiceNameEnum.USER,
-          payload,
-        );
-        const result: MicroResInterface = await sendMicroMessage(
-          this.userClient,
-          PatternEnum.USER_AVATAR_DELETED,
-          message,
-        );
+        const result: MicroResInterface =
+          await this.fileMicroserviceService.sendToUserService(
+            PatternEnum.USER_AVATAR_DELETED,
+            payload,
+          );
         if (result.error) {
           throw new InternalServerErrorException(result.reason.message);
         }

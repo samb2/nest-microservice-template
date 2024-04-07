@@ -11,6 +11,8 @@ import { Bucket, BucketSchema } from '../minio/schemas/bucket.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServiceNameEnum } from '@irole/microservices';
 import { redisCommonFactory } from '../redis/redis-client.factory';
+import { FileMicroserviceController } from './microservice/file-microservice.controller';
+import { FileMicroserviceService } from './microservice/file-microservice.service';
 
 @Module({
   imports: [
@@ -45,10 +47,11 @@ import { redisCommonFactory } from '../redis/redis-client.factory';
       },
     ]),
   ],
-  controllers: [FileController],
+  controllers: [FileController, FileMicroserviceController],
   providers: [
     FileService,
     FileRepository,
+    FileMicroserviceService,
     BucketRepository,
     redisCommonFactory,
   ],

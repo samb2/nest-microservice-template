@@ -15,12 +15,15 @@ import {
   redisCommonFactory,
   redisRefreshFactory,
 } from '../redis/redis-client.factory';
+import { AuthMicroserviceController } from './microservice/auth-microservice.controller';
+import { AuthMicroserviceService } from './microservice/auth-microservice.service';
+import { TokenModule } from '../token/token.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, ResetPassword]),
     PassportModule.register({ defaultStrategy: 'jwt-access' }),
-    JwtModule.register({}),
+    TokenModule,
     ClientsModule.registerAsync([
       {
         name: ServiceNameEnum.USER,
@@ -47,9 +50,10 @@ import {
       },
     ]),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthMicroserviceController],
   providers: [
     AuthService,
+    AuthMicroserviceService,
     AccessTokenStrategy,
     RefreshTokenStrategy,
     redisRefreshFactory,

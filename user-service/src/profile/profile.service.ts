@@ -1,122 +1,23 @@
 import {
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ClientProxy, RmqContext } from '@nestjs/microservices';
 import { User } from '../user/entities/user.entity';
-import {
-  generateMessage,
-  generateResMessage,
-  MicroResInterface,
-  MicroSendInterface,
-  PatternEnum,
-  sendMicroMessage,
-  ServiceNameEnum,
-} from '@irole/microservices';
-import { UserRepository } from '../user/repository/user.repository';
-import { DeleteAvatarDto } from './dto/delete-avatar.dto';
-import { UpdateAvatarDto } from './dto/update-avatar.dto';
+import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ProfileMicroserviceService } from './microservice/profile-microservice.service';
 
 @Injectable()
 export class ProfileService {
   constructor(
-    private readonly userRepository: UserRepository,
-    @Inject(ServiceNameEnum.FILE) private readonly fileClient: ClientProxy,
-    @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly profileMicroserviceService: ProfileMicroserviceService,
   ) {}
-
-  async microUpdateAvatar(
-    updateAvatarDto: UpdateAvatarDto,
-    context: RmqContext,
-  ) {
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    try {
-      const user: User = await this.userRepository.findOne({
-        where: {
-          authId: updateAvatarDto.data.authId,
-        },
-      });
-      if (!user) {
-        throw new NotFoundException('user not found!');
-      }
-      let data: object = {
-        delete: false,
-        avatar: null,
-      };
-      if (user.avatar) {
-        data = {
-          delete: true,
-          avatar: user.avatar.replace('avatar/', ''),
-        };
-      }
-      user.avatar = updateAvatarDto.data.avatar;
-      await this.userRepository.save(user);
-      channel.ack(originalMsg);
-      return generateResMessage(
-        ServiceNameEnum.USER,
-        ServiceNameEnum.FILE,
-        data,
-        false,
-      );
-    } catch (e) {
-      await channel.reject(originalMsg, false);
-      return generateResMessage(
-        ServiceNameEnum.USER,
-        ServiceNameEnum.FILE,
-        null,
-        true,
-        {
-          message: e.message,
-          status: e.statusCode | 500,
-        },
-      );
-    }
-  }
-
-  async microDeleteAvatar(
-    deleteAvatarDto: DeleteAvatarDto,
-    context: RmqContext,
-  ) {
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    try {
-      const user: User = await this.userRepository.findOne({
-        where: {
-          authId: deleteAvatarDto.data.authId,
-        },
-      });
-      if (!user) {
-        throw new NotFoundException('user not found!');
-      }
-
-      user.avatar = null;
-      await this.userRepository.save(user);
-      channel.ack(originalMsg);
-      return generateResMessage(
-        ServiceNameEnum.USER,
-        ServiceNameEnum.FILE,
-        'avatar deleted',
-        false,
-      );
-    } catch (e) {
-      await channel.reject(originalMsg, false);
-      return generateResMessage(
-        ServiceNameEnum.USER,
-        ServiceNameEnum.FILE,
-        null,
-        true,
-        {
-          message: e.message,
-          status: e.statusCode | 500,
-        },
-      );
-    }
-  }
 
   async findOne(id: string): Promise<User> {
     return await this.userRepository.findOne({
@@ -162,17 +63,11 @@ export class ProfileService {
       authId: user.authId,
     };
 
-    const message: MicroSendInterface = generateMessage(
-      ServiceNameEnum.USER,
-      ServiceNameEnum.AUTH,
-      payload,
-    );
-
-    const result: MicroResInterface = await sendMicroMessage(
-      this.authClient,
-      PatternEnum.AUTH_UPDATE_PASSWORD,
-      message,
-    );
+    const result: MicroResInterface =
+      await this.profileMicroserviceService.sendToAuthService(
+        PatternEnum.AUTH_UPDATE_PASSWORD,
+        payload,
+      );
     if (result.error) {
       throw new InternalServerErrorException(result.reason.message);
     }
@@ -191,17 +86,12 @@ export class ProfileService {
         avatar: avatar.replace(`avatar/`, ''),
       };
 
-      const message: MicroSendInterface = generateMessage(
-        ServiceNameEnum.USER,
-        ServiceNameEnum.FILE,
-        payload,
-      );
+      const result: MicroResInterface =
+        await this.profileMicroserviceService.sendToFileService(
+          PatternEnum.USER_AVATAR_DELETED,
+          payload,
+        );
 
-      const result: MicroResInterface = await sendMicroMessage(
-        this.fileClient,
-        PatternEnum.USER_AVATAR_DELETED,
-        message,
-      );
       if (result.error) {
         throw new InternalServerErrorException(result.reason.message);
       }

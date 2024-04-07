@@ -23,7 +23,7 @@ export class MinioModule implements OnModuleInit {
 
   async onModuleInit() {
     for (const existElement in BucketEnum) {
-      const exist = await this.minioService.createBucketIfNotExist(
+      const exist: boolean = await this.minioService.createBucketIfNotExist(
         BucketEnum[existElement],
       );
       if (!exist) {

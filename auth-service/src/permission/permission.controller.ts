@@ -1,45 +1,28 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { PermissionService } from './permission.service';
-import { CreatePermissionDto } from './dto/create-permission.dto';
-import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Permission } from './entities/permission.entity';
+import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
+import { PermissionGuard } from '../utils/guard/permission.guard';
+import { PermissionEnum, Permissions } from '@irole/microservices';
 
-@Controller('permission')
+@ApiTags('permissions')
+@ApiBearerAuth()
+@Controller('permissions')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 
-  @Post()
-  create(@Body() createPermissionDto: CreatePermissionDto) {
-    return this.permissionService.create(createPermissionDto);
-  }
-
+  @UseGuards(AccessTokenGuard, PermissionGuard)
+  @Permissions(PermissionEnum.READ_PERMISSION)
   @Get()
-  findAll() {
+  findAll(): Promise<Permission[]> {
     return this.permissionService.findAll();
   }
 
+  @UseGuards(AccessTokenGuard, PermissionGuard)
+  @Permissions(PermissionEnum.READ_PERMISSION)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.permissionService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updatePermissionDto: UpdatePermissionDto,
-  ) {
-    return this.permissionService.update(+id, updatePermissionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.permissionService.remove(+id);
+  findOne(@Param('id') id: string): Promise<Permission> {
+    return this.permissionService.findOne(id);
   }
 }
