@@ -17,10 +17,10 @@ import {
   validUser,
   wrongPassword,
 } from '../../test/constants/userData';
-import { RegisterResDto } from './dto/response/registerRes.dto';
+import { RegisterResDto } from './dto/response/register-res.dto';
 import * as bcrypt from 'bcrypt';
 import { bcryptPassword } from '../utils/password.util';
-import { LoginResDto } from './dto/response/loginRes.dto';
+import { LoginResDto } from './dto/response/login-res.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 // Mocking the User and ResetPassword repositories

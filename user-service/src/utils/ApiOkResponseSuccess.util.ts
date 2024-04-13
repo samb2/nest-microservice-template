@@ -22,7 +22,7 @@ class SuccessResponseDto<T> {
 
 export const ApiOkResponseSuccess = <DataDto extends Type<unknown>>(
   dataDto: DataDto,
-  status: number,
+  status: number = 200,
   isArray: boolean = false,
 ) =>
   applyDecorators(

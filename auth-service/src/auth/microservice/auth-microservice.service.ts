@@ -114,7 +114,7 @@ export class AuthMicroserviceService {
   async updatePassword(
     updateUserPasswordDto: UpdateUserPasswordDto,
     context: RmqContext,
-  ) {
+  ): Promise<MicroResInterface> {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
     try {
@@ -127,7 +127,7 @@ export class AuthMicroserviceService {
         user.password,
       );
       if (!compare) {
-        throw new Error('your old password is incorrect');
+        throw new Error('Your old password is incorrect');
       }
 
       user.password = await bcryptPassword(

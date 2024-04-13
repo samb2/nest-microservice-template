@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FindUsersDto } from './find-users.dto';
 
 interface PageMetaDtoParameters {
-  findUsersDto: FindUsersDto;
+  metaData: any;
   itemCount: number;
 }
 
@@ -25,9 +24,9 @@ export class PageMetaDto {
   @ApiProperty()
   readonly hasNextPage: boolean;
 
-  constructor({ findUsersDto, itemCount }: PageMetaDtoParameters) {
-    this.page = findUsersDto.page;
-    this.take = findUsersDto.take;
+  constructor({ metaData, itemCount }: PageMetaDtoParameters) {
+    this.page = metaData.page;
+    this.take = metaData.take;
     this.itemCount = itemCount;
     this.pageCount = Math.ceil(this.itemCount / this.take);
     this.hasPreviousPage = this.page > 1;

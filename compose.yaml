@@ -1,69 +1,59 @@
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Docker compose reference guide at
-# https://docs.docker.com/compose/compose-file/
-
-# Here the instructions define your application as a service called "server".
-# This service is built from the Dockerfile in the current directory.
-# You can add other services your application may depend on here, such as a
-# database or a cache. For examples, see the Awesome Compose repository:
-# https://github.com/docker/awesome-compose
 services:
-
-  file-service:
-    build:
-      context: ./file-service
-    environment:
-      NODE_ENV: production
-    container_name: file-service
-    ports:
-      - "4000:4000"
-    networks:
-      - file_service
-    depends_on:
-      mongo-file:
-        condition: service_healthy
-      redis-common:
-        condition: service_started
-      rabbitmq:
-        condition: service_started
-
-  user-service:
-    build:
-      context: ./user-service
-    environment:
-      NODE_ENV: production
-    container_name: user-service
-    ports:
-      - "2000:2000"
-    networks:
-      - user_service
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis-common:
-        condition: service_started
-      rabbitmq:
-        condition: service_started
-
-  auth-service:
-    build:
-      context: ./auth-service
-    environment:
-      NODE_ENV: production
-    container_name: auth-service
-    ports:
-      - "3000:3000"
-    networks:
-      - auth_service
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis-auth:
-        condition: service_started
-      redis-common:
-        condition: service_started
-      rabbitmq:
-        condition: service_started
+  #  file-service:
+  #    build:
+  #      context: ./file-service
+  #    environment:
+  #      NODE_ENV: production
+  #    container_name: file-service
+  #    ports:
+  #      - "4000:4000"
+  #    networks:
+  #      - file_service
+  #    depends_on:
+  #      mongo-file:
+  #        condition: service_healthy
+  #      redis-common:
+  #        condition: service_started
+  #      rabbitmq:
+  #        condition: service_started
+  #
+  #  user-service:
+  #    build:
+  #      context: ./user-service
+  #    environment:
+  #      NODE_ENV: production
+  #    container_name: user-service
+  #    ports:
+  #      - "2000:2000"
+  #    networks:
+  #      - user_service
+  #    depends_on:
+  #      postgres:
+  #        condition: service_healthy
+  #      redis-common:
+  #        condition: service_started
+  #      rabbitmq:
+  #        condition: service_started
+  #
+  #  auth-service:
+  #    build:
+  #      context: ./auth-service
+  #    environment:
+  #      NODE_ENV: production
+  #    container_name: auth-service
+  #    ports:
+  #      - "3000:3000"
+  #    networks:
+  #      - auth_service
+  #    depends_on:
+  #      postgres:
+  #        condition: service_healthy
+  #      redis-auth:
+  #        condition: service_started
+  #      redis-common:
+  #        condition: service_started
+  #      rabbitmq:
+  #        condition: service_started
 
   postgres:
     image: postgres
@@ -169,7 +159,40 @@ services:
       - auth_service
       - user_service
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    networks:
+      - auth_service
+      - user_service
+
+  portainer:
+    image: portainer/portainer-ce
+    container_name: portainer
+    restart: always
+    ports:
+      - "9003:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer:/data
+    networks:
+      - auth_service
+      - user_service
+      - file_service
+
 volumes:
+  portainer:
+  pgadmin:
   postgres:
   mongo-file:
   rabbit_data:

@@ -14,6 +14,7 @@ import { File } from './schemas/file.schema';
 import { BucketEnum } from '../minio/bucket.enum';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { FileMicroserviceService } from './microservice/file-microservice.service';
+import { DeleteFileResDto } from './dto/response/delete-file-res.dto';
 
 @Injectable()
 export class FileService {
@@ -25,7 +26,7 @@ export class FileService {
   ) {}
 
   //todo add transaction for mongo
-  async uploadAvatar(image: any, user: any): Promise<any> {
+  async uploadAvatar(image: any, user: any): Promise<File> {
     const metaData: object = {
       'content-type': image.mimetype,
     };
@@ -93,12 +94,12 @@ export class FileService {
   }
 
   async findOne(id: string): Promise<File> {
-    return this._fileExists(id);
+    return this._findById(id);
   }
 
-  async remove(id: any): Promise<string> {
+  async remove(id: any): Promise<DeleteFileResDto> {
     try {
-      const file: File = await this._fileExists(id);
+      const file: File = await this._findById(id);
       const bucketName = file.bucket['name'];
       await this.minioService.removeObject(bucketName, file.key);
       await this.fileRepo.findByIdAndDelete(id);
@@ -117,13 +118,13 @@ export class FileService {
           throw new InternalServerErrorException(result.reason.message);
         }
       }
-      return `This action removes a #${id} file`;
+      return { message: `This action removes a #${id} file` };
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
   }
 
-  async _fileExists(id: any): Promise<File> {
+  async _findById(id: any): Promise<File> {
     const file: File = await this.fileRepo.findById(
       id,
       { key: true, name: true, path: true, bucket: true, uploadedBy: true },

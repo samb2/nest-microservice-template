@@ -6,6 +6,7 @@ import { Bucket, BucketSchema } from './schemas/bucket.schema';
 import { BucketRepository } from './bucket.repository';
 import { redisCommonFactory } from '../redis/redis-client.factory';
 import { BucketEnum } from './bucket.enum';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -19,18 +20,21 @@ export class MinioModule implements OnModuleInit {
   constructor(
     private readonly bucketRepo: BucketRepository,
     private readonly minioService: MinioService,
+    private readonly configService: ConfigService,
   ) {}
 
   async onModuleInit() {
-    for (const existElement in BucketEnum) {
-      const exist: boolean = await this.minioService.createBucketIfNotExist(
-        BucketEnum[existElement],
-      );
-      if (!exist) {
-        await this.bucketRepo.insert({
-          name: BucketEnum[existElement],
-        });
-        Logger.log(`${BucketEnum[existElement]} created`);
+    if (this.configService.get('minio.synchronize')) {
+      for (const existElement in BucketEnum) {
+        const exist: boolean = await this.minioService.createBucketIfNotExist(
+          BucketEnum[existElement],
+        );
+        if (!exist) {
+          await this.bucketRepo.insert({
+            name: BucketEnum[existElement],
+          });
+          Logger.log(`${BucketEnum[existElement]} created`);
+        }
       }
     }
   }

@@ -10,6 +10,8 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProfileMicroserviceService } from './microservice/profile-microservice.service';
+import { UpdateProfileResDto } from './dto/response/update-profile-res.dto';
+import { DeleteAvatarResDto } from './dto/response/delete-avatar-res.dto';
 
 @Injectable()
 export class ProfileService {
@@ -19,25 +21,14 @@ export class ProfileService {
     private readonly profileMicroserviceService: ProfileMicroserviceService,
   ) {}
 
-  async findOne(id: string): Promise<User> {
-    return await this.userRepository.findOne({
-      where: { id },
-      select: {
-        id: true,
-        authId: true,
-        avatar: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        createdAt: true,
-      },
-    });
+  async findOne(user: User): Promise<User> {
+    return user;
   }
 
   async update(
     updateProfileDto: UpdateProfileDto,
     user: User,
-  ): Promise<string> {
+  ): Promise<UpdateProfileResDto> {
     let { firstName, lastName } = updateProfileDto;
 
     firstName = firstName ? firstName : user.firstName;
@@ -50,7 +41,7 @@ export class ProfileService {
         lastName,
       },
     );
-    return `profile update successfully`;
+    return { message: `profile update successfully` };
   }
 
   async updatePassword(
@@ -71,10 +62,10 @@ export class ProfileService {
     if (result.error) {
       throw new InternalServerErrorException(result.reason.message);
     }
-    return `profile password update successfully`;
+    return `Password update successfully`;
   }
 
-  async deleteAvatar(id: string, avatar: string) {
+  async deleteAvatar(id: string, avatar: string): Promise<DeleteAvatarResDto> {
     try {
       if (!avatar) {
         throw new NotFoundException('avatar not found');
@@ -95,7 +86,7 @@ export class ProfileService {
       if (result.error) {
         throw new InternalServerErrorException(result.reason.message);
       }
-      return 'Profile Avatar delete successfully!';
+      return { message: 'Avatar deleted successfully' };
     } catch (e) {
       throw e;
     }

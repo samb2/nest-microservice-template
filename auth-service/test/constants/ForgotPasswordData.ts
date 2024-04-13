@@ -1,4 +1,4 @@
-import { ForgotPasswordDto } from '../../src/auth/dto/forgotPassword.dto';
+import { ForgotPasswordDto } from '../../src/auth/dto/forgot-password.dto';
 
 export const forgotPasswordEmail: ForgotPasswordDto = {
   email: 'testUser1@test.com',

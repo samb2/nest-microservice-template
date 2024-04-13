@@ -11,17 +11,17 @@ import { DataSource, EntityManager, QueryRunner, Repository } from 'typeorm';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RegisterDto } from './dto/register.dto';
-import { RegisterResDto } from './dto/response/registerRes.dto';
+import { RegisterResDto } from './dto/response/register-res.dto';
 import { LoginDto } from './dto/login.dto';
-import { LoginResDto } from './dto/response/loginRes.dto';
+import { LoginResDto } from './dto/response/login-res.dto';
 import { bcryptPassword, comparePassword } from '../utils/password.util';
-import { ForgotPasswordResDto } from './dto/response/forgotPasswordRes.dto';
-import { ForgotPasswordDto } from './dto/forgotPassword.dto';
+import { ForgotPasswordResDto } from './dto/response/forgot-password-res.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { User } from './entities/user.entity';
 import { ResetPassword } from './entities/reset-password.entity';
-import { ResetPasswordDto } from './dto/resetPassword.dto';
-import { ResetPasswordResDto } from './dto/response/resetPasswordRes.dto';
-import { RefreshResDto } from './dto/response/refreshRes.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ResetPasswordResDto } from './dto/response/reset-password-res.dto';
+import { RefreshResDto } from './dto/response/refresh-res.dto';
 import { IAuthServiceInterface } from './interfaces/IAuthService.interface';
 import { createTransaction } from '../utils/create-transaction.util';
 import {
@@ -37,6 +37,7 @@ import { RoleEnum } from '../role/enum/role.enum';
 import { AuthMicroserviceService } from './microservice/auth-microservice.service';
 import { TokenService } from '../token/token.service';
 import { TokenTypeEnum } from '../token/enum/token-type.enum';
+import { LogoutResDto } from './dto/response/logout-res.dto';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
@@ -122,7 +123,7 @@ export class AuthService implements IAuthServiceInterface {
       }
 
       if (!user.isActive) {
-        throw new ForbiddenException('your account is not active!');
+        throw new ForbiddenException('Your account is not active!');
       }
       // Generate Tokens
       const roleIds: number[] = user.userRoles.map(
@@ -258,7 +259,7 @@ export class AuthService implements IAuthServiceInterface {
     }
   }
 
-  public async logout(user: User): Promise<object> {
+  public async logout(user: User): Promise<LogoutResDto> {
     try {
       await this.redisRefresh.set(user.id, '');
       return { message: 'Logout Successfully' };

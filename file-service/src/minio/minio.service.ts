@@ -9,7 +9,6 @@ export class MinioService {
   public minioService;
 
   constructor(
-    //private readonly minioService: MinioPackageService,
     private readonly bucketRepo: BucketRepository,
     private readonly configService: ConfigService,
   ) {
@@ -35,7 +34,7 @@ export class MinioService {
     }
   }
 
-  async findAll(): Promise<Bucket[]> {
+  async findAll(): Promise<Bucket[] | []> {
     return this.bucketRepo.find({});
   }
 

@@ -49,7 +49,7 @@ async function bootstrap(): Promise<void> {
   //if (process.env.NODE_ENV !== 'production') {
   const options = new DocumentBuilder()
     .setTitle('USER-SERVICE Template')
-    .setDescription('The Authorization API description')
+    .setDescription('The User Service API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

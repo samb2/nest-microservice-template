@@ -6,15 +6,30 @@ import {
   Delete,
   Req,
   UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { PermissionEnum, Permissions } from '@irole/microservices';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiInternalServerErrorResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { User } from '../user/entities/user.entity';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { GetProfileResDto } from './dto/response/get-profile-res.dto';
+import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
+import { UpdateProfileResDto } from './dto/response/update-profile-res.dto';
+import { UpdatePasswordResDto } from './dto/response/update-password-res.dto';
+import { DeleteAvatarResDto } from './dto/response/delete-avatar-res.dto';
 
 @ApiTags('profile')
 @ApiBearerAuth()
@@ -25,23 +40,40 @@ export class ProfileController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_PROFILE)
   @Get()
+  @ApiOperation({ summary: 'Find one profile' })
+  @ApiOkResponseSuccess(GetProfileResDto)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseInterceptors(ClassSerializerInterceptor)
   findOne(@Req() req: any): Promise<User> {
-    return this.profileService.findOne(req.user.id);
+    return this.profileService.findOne(req.user);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.UPDATE_PROFILE)
   @Patch()
+  @ApiOperation({ summary: 'Update profile' })
+  @ApiBody({ type: UpdateProfileDto })
+  @ApiOkResponseSuccess(UpdateProfileResDto)
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   update(
     @Body() updateProfileDto: UpdateProfileDto,
     @Req() req: any,
-  ): Promise<string> {
+  ): Promise<UpdateProfileResDto> {
     return this.profileService.update(updateProfileDto, req.user);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.UPDATE_PROFILE)
   @Patch('/password')
+  @ApiOperation({ summary: 'Update password' })
+  @ApiBody({ type: UpdatePasswordDto })
+  @ApiOkResponseSuccess(UpdatePasswordResDto)
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiInternalServerErrorResponse({
+    description: 'Your old password is incorrect',
+  })
   updatePassword(
     @Body() updatePasswordDto: UpdatePasswordDto,
     @Req() req: any,
@@ -52,7 +84,11 @@ export class ProfileController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.DELETE_AVATAR)
   @Delete('/avatar')
-  deleteAvatar(@Req() req: any): Promise<string> {
+  @ApiOperation({ summary: 'Delete avatar' })
+  @ApiOkResponseSuccess(DeleteAvatarResDto)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiInternalServerErrorResponse()
+  deleteAvatar(@Req() req: any): Promise<DeleteAvatarResDto> {
     return this.profileService.deleteAvatar(req.user.id, req.user.avatar);
   }
 }

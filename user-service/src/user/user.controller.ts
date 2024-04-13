@@ -12,22 +12,22 @@ import { UserService } from './user.service';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiQuery,
-  ApiResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { PermissionEnum } from '@irole/microservices';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
-import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Permissions } from '@irole/microservices';
-import { PageMetaDto } from './dto/page-meta.dto';
-import { FindUsersDto } from './dto/find-users.dto';
+import { FindUsersQueryDto } from './dto/find-users-query.dto';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { UpdateUserResDto } from './dto/response/update-user-res.dto';
 import { GetUserResDto } from './dto/response/get-user-res.dto';
+import { GetAllUsersResDto } from './dto/response/get-all-users-res.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -39,13 +39,15 @@ export class UserController {
   @Permissions(PermissionEnum.READ_USER)
   @Get()
   @ApiOperation({ summary: 'Get all users' })
+  @ApiOkResponseSuccess(GetAllUsersResDto)
   @ApiBadRequestResponse({ description: 'Bad Request!' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiQuery({ name: 'is_delete', required: false, type: Boolean })
   @ApiQuery({ name: 'is_active', required: false, type: Boolean })
   @ApiQuery({ name: 'admin', required: false, type: Boolean })
   findAll(
-    @Query() findUsersDto?: FindUsersDto,
-  ): Promise<{ users: User[]; pageMeta: PageMetaDto }> {
+    @Query() findUsersDto?: FindUsersQueryDto,
+  ): Promise<GetAllUsersResDto> {
     return this.userService.findAll(findUsersDto);
   }
 
@@ -53,10 +55,11 @@ export class UserController {
   @Permissions(PermissionEnum.READ_USER)
   @Get(':id')
   @ApiOperation({ summary: 'Get a user info' })
-  @ApiOkResponseSuccess(GetUserResDto, 200)
+  @ApiOkResponseSuccess(GetUserResDto)
   @ApiBadRequestResponse({ description: 'Bad Request!' })
-  @ApiResponse({ status: 404, description: 'user not found!' })
-  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'User not found!' })
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<GetUserResDto> {
     return this.userService.findOne(id);
   }
 
@@ -64,9 +67,10 @@ export class UserController {
   @Permissions(PermissionEnum.UPDATE_USER)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a user' })
-  @ApiOkResponseSuccess(UpdateUserResDto, 200)
+  @ApiOkResponseSuccess(UpdateUserResDto)
   @ApiBadRequestResponse({ description: 'Bad Request!' })
-  @ApiResponse({ status: 404, description: 'user not found!' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'User not found!' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,

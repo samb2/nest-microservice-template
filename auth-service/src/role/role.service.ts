@@ -17,6 +17,10 @@ import Redis from 'ioredis';
 import { PermissionEnum } from '@irole/microservices';
 import { User } from '../auth/entities/user.entity';
 import { UsersRoles } from '../auth/entities/users-roles.entity';
+import { GetRoleDto } from './dto/get-role.dto';
+import { PageMetaDto } from '../utils/page-meta.dto';
+import { DeleteRoleResDto } from './dto/response/delete-role-res.dto';
+import { DeleteRoleUserResDto } from './dto/response/delete-role-user-res.dto';
 
 @Injectable()
 export class RoleService {
@@ -45,7 +49,7 @@ export class RoleService {
         where: { name: createRoleDto.name },
       });
       if (roleExist) {
-        throw new ConflictException('Role already exists');
+        throw new ConflictException('Role already exists!');
       }
 
       const role: Role = roleRep.create({
@@ -119,12 +123,27 @@ export class RoleService {
     }
   }
 
-  findAll(): Promise<Role[]> {
-    return this.roleRepository.find({
+  async findAll(
+    getRoleDto: GetRoleDto,
+  ): Promise<{ roles: Role[]; pageMeta: PageMetaDto }> {
+    const { sort, sortField, take, skip } = getRoleDto;
+    const orderField: string = sortField || 'id';
+    const orderDirection: string = sort || 'ASC';
+    const [roles, itemCount] = await this.roleRepository.findAndCount({
       where: {
         name: Not('super admin'),
       },
+      skip,
+      take,
+      order: {
+        [orderField]: orderDirection,
+      },
     });
+    const pageMeta: PageMetaDto = new PageMetaDto({
+      metaData: getRoleDto,
+      itemCount,
+    });
+    return { roles, pageMeta };
   }
 
   async findOne(id: number): Promise<Role> {
@@ -133,87 +152,100 @@ export class RoleService {
       relations: ['rolePermissions', 'rolePermissions.permission'],
     });
     if (!role) {
-      throw new NotFoundException(`Role not found.`);
+      throw new NotFoundException(`Role not found!`);
     }
     return role;
   }
 
-  // Todo add transaction
   async update(id: number, updateRoleDto: UpdateRoleDto): Promise<Role> {
-    const role: Role = await this.roleRepository.findOne({
-      where: { id },
-    });
-    if (!role) {
-      throw new NotFoundException(`Role not found.`);
-    }
+    const queryRunner: QueryRunner = await createTransaction(this.dataSource);
+    const roleRep: Repository<Role> = queryRunner.manager.getRepository(Role);
+    const permissionRep: Repository<Permission> =
+      queryRunner.manager.getRepository(Permission);
+    const rolePermissionRep: Repository<RolePermission> =
+      queryRunner.manager.getRepository(RolePermission);
 
-    const { name, description, permissionIds } = updateRoleDto;
-    // Update role properties
-    const roleExist: Role = await this.roleRepository.findOne({
-      where: { name, id: Not(id) },
-    });
-    if (roleExist) {
-      throw new ConflictException('Role Name already Exist');
-    }
-    role.name = name ?? role.name;
-    role.description = description ?? role.description;
-
-    if (permissionIds && permissionIds.length > 0) {
-      // Remove existing role permissions
-      await this.rolePermissionRepository.delete({ role: { id } });
-      await this.redisCommon.del(role.id.toString());
-      //---------------------------------
-      // Find duplicates in the rolePermissions array
-      const duplicates: string[] = permissionIds.filter(
-        (item, index) => permissionIds.indexOf(item) < index,
-      );
-
-      if (duplicates.length > 0) {
-        throw new BadRequestException(
-          `Duplicated permission IDs found: ${duplicates.join(', ')}`,
-        );
-      }
-      //-----------------------------------------------
-      // Collect the IDs of permissions that were not found
-      const permissions: Permission[] = await this.permissionRepository.find({
-        select: { id: true, access: true },
-        where: {
-          id: In(permissionIds),
-        },
+    try {
+      const role: Role = await roleRep.findOne({
+        where: { id },
       });
-
-      const notFoundPermissions: string[] = permissionIds.filter(
-        (id) => !permissions.some((permission) => permission.id === id),
-      );
-
-      if (notFoundPermissions.length > 0) {
-        throw new NotFoundException(
-          `Permissions with IDs ${notFoundPermissions.join(', ')} not found.`,
-        );
+      if (!role) {
+        throw new NotFoundException(`Role not found.`);
       }
-      //------------------------------------------------
-      // ----------- Add RolePermission ---------------
-      role.rolePermissions = permissions.map((permission) => {
-        return this.rolePermissionRepository.create({
-          role: { id: role.id },
-          permission,
+
+      const { name, description, permissionIds } = updateRoleDto;
+      // Update role properties
+      const roleExist: Role = await roleRep.findOne({
+        where: { name, id: Not(id) },
+      });
+      if (roleExist) {
+        throw new ConflictException('Role Name already Exist');
+      }
+      role.name = name ?? role.name;
+      role.description = description ?? role.description;
+      if (permissionIds && permissionIds.length > 0) {
+        // Remove existing role permissions
+        await rolePermissionRep.delete({ role: { id } });
+        await this.redisCommon.del(role.id.toString());
+        //---------------------------------
+        // Find duplicates in the rolePermissions array
+        const duplicates: string[] = permissionIds.filter(
+          (item, index) => permissionIds.indexOf(item) < index,
+        );
+
+        if (duplicates.length > 0) {
+          throw new BadRequestException(
+            `Duplicated permission IDs found: ${duplicates.join(', ')}`,
+          );
+        }
+        //-----------------------------------------------
+        // Collect the IDs of permissions that were not found
+        const permissions: Permission[] = await permissionRep.find({
+          select: { id: true, access: true },
+          where: {
+            id: In(permissionIds),
+          },
         });
-      });
-      const redisPermissions: PermissionEnum[] = permissions.map(
-        (permission) => permission.access,
-      );
-      await this.redisCommon.set(
-        role.id.toString(),
-        JSON.stringify(redisPermissions),
-      );
-      //-----------------------------------------------
-    }
-    await this.roleRepository.save(role);
 
-    return role;
+        const notFoundPermissions: string[] = permissionIds.filter(
+          (id) => !permissions.some((permission) => permission.id === id),
+        );
+
+        if (notFoundPermissions.length > 0) {
+          throw new NotFoundException(
+            `Permissions with IDs ${notFoundPermissions.join(', ')} not found.`,
+          );
+        }
+        //------------------------------------------------
+        // ----------- Add RolePermission ---------------
+        role.rolePermissions = permissions.map((permission) => {
+          return rolePermissionRep.create({
+            role: { id: role.id },
+            permission,
+          });
+        });
+
+        const redisPermissions: PermissionEnum[] = permissions.map(
+          (permission) => permission.access,
+        );
+        await this.redisCommon.set(
+          role.id.toString(),
+          JSON.stringify(redisPermissions),
+        );
+        //-----------------------------------------------
+      }
+      await roleRep.save(role);
+      await queryRunner.commitTransaction();
+      return role;
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw e;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
-  async remove(id: number): Promise<string> {
+  async remove(id: number): Promise<DeleteRoleResDto> {
     const queryRunner: QueryRunner = await createTransaction(this.dataSource);
     const roleRep: Repository<Role> = queryRunner.manager.getRepository(Role);
 
@@ -230,7 +262,7 @@ export class RoleService {
       // Delete Role In Redis Common
       await this.redisCommon.del(role.id.toString());
       await queryRunner.commitTransaction();
-      return `This action removes a #${id} role`;
+      return { message: `Role deleted successfully` };
     } catch (e) {
       await queryRunner.rollbackTransaction();
       throw e;
@@ -301,7 +333,10 @@ export class RoleService {
     return usersRoles;
   }
 
-  async deleteUserRole(id: number, userId: string): Promise<string> {
+  async deleteUserRole(
+    id: number,
+    userId: string,
+  ): Promise<DeleteRoleUserResDto> {
     const role: Role = await this.roleRepository.findOne({
       where: { id },
       select: { id: true, name: true },
@@ -322,7 +357,7 @@ export class RoleService {
     });
 
     if (!user) {
-      throw new NotFoundException('user not found!');
+      throw new NotFoundException('User not found!');
     }
 
     const usersRolesExist: UsersRoles = await this.usersRolesRepository.findOne(
@@ -335,11 +370,13 @@ export class RoleService {
     );
 
     if (!usersRolesExist) {
-      throw new NotFoundException('this role not assigned to this user!');
+      throw new NotFoundException('This role not assigned to this user!');
     }
 
     await this.usersRolesRepository.remove(usersRolesExist);
 
-    return `This action removes a #${role.name} role from ${user.email}`;
+    return {
+      message: `This action removes a #${role.name} role from ${user.email}`,
+    };
   }
 }

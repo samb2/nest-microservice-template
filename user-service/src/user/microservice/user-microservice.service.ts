@@ -33,7 +33,7 @@ export class UserMicroserviceService {
       if (!expireCheck(createUserDto.ttl)) {
         throw new RequestTimeoutException('Token Expired');
       }
-      const user = this.userRepository.create({
+      const user: User = this.userRepository.create({
         email: createUserDto.data.email,
         authId: createUserDto.data.authId,
       });

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class GetUserResDto {
+export class GetProfileResDto {
   @ApiProperty({})
   id: string;
 
@@ -20,18 +20,9 @@ export class GetUserResDto {
   lastName: string;
 
   @ApiProperty({})
-  isActive: boolean;
-
-  @ApiProperty({ default: false })
-  isDelete: boolean;
-
-  @ApiProperty({ default: false })
-  admin: boolean;
-
-  @ApiProperty({})
   createdAt: Date;
 
-  constructor(partial: Partial<GetUserResDto>) {
+  constructor(partial: Partial<GetProfileResDto>) {
     Object.assign(this, partial);
   }
 }

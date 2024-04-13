@@ -6,12 +6,14 @@ import {
 import { User } from './entities/user.entity';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PageMetaDto } from './dto/page-meta.dto';
-import { FindUsersDto } from './dto/find-users.dto';
+import { FindUsersQueryDto } from './dto/find-users-query.dto';
 import { UpdateUserResDto } from './dto/response/update-user-res.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserMicroserviceService } from './microservice/user-microservice.service';
+import { GetUserResDto } from './dto/response/get-user-res.dto';
+import { PageMetaDto } from '../utils/page-meta.dto';
+import { GetAllUsersResDto } from './dto/response/get-all-users-res.dto';
 
 @Injectable()
 export class UserService {
@@ -21,9 +23,7 @@ export class UserService {
     private readonly userMicroserviceService: UserMicroserviceService,
   ) {}
 
-  async findAll(
-    findUsersDto?: FindUsersDto,
-  ): Promise<{ users: User[]; pageMeta: PageMetaDto }> {
+  async findAll(findUsersDto?: FindUsersQueryDto): Promise<GetAllUsersResDto> {
     const { is_active, admin, is_delete, sort, sortField, take, skip } =
       findUsersDto;
     const whereConditions: any = {};
@@ -63,14 +63,14 @@ export class UserService {
     });
 
     const pageMeta = new PageMetaDto({
-      findUsersDto,
+      metaData: findUsersDto,
       itemCount,
     });
 
     return { users, pageMeta };
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string): Promise<GetUserResDto> {
     const user: User = await this.userRepository.findOne({
       where: {
         id,
@@ -85,10 +85,11 @@ export class UserService {
         isActive: true,
         isDelete: true,
         admin: true,
+        authId: true,
       },
     });
     if (!user) {
-      throw new NotFoundException('user not found!');
+      throw new NotFoundException('User not found!');
     }
     return user;
   }
@@ -103,7 +104,7 @@ export class UserService {
       },
     });
     if (!user) {
-      throw new NotFoundException('user not found!');
+      throw new NotFoundException('User not found!');
     }
     Object.assign(user, updateUserDto);
     //---------------------------------------

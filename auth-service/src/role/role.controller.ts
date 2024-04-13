@@ -9,17 +9,39 @@ import {
   UseGuards,
   ParseUUIDPipe,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiConflictResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
 import { PermissionEnum, Permissions } from '@irole/microservices';
 import { Role } from './entities/role.entity';
 import { User } from '../auth/entities/user.entity';
 import { UsersRoles } from '../auth/entities/users-roles.entity';
+import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
+import { CreateRoleResDto } from './dto/response/create-role-res.dto';
+import { GetRoleDto } from './dto/get-role.dto';
+import { PageMetaDto } from '../utils/page-meta.dto';
+import { GetRoleResDto } from './dto/response/get-role-res.dto';
+import { GetAllRoleResDto } from './dto/response/get-all-role-res.dto';
+import { DeleteRoleResDto } from './dto/response/delete-role-res.dto';
+import { RoleUserResDto } from './dto/response/get-role-user-res.dto';
+import { AssignRoleResDto } from './dto/response/assign-role-res.dto';
+import { DeleteRoleUserResDto } from './dto/response/delete-role-user-res.dto';
 
 @ApiTags('roles')
 @ApiBearerAuth()
@@ -30,6 +52,17 @@ export class RoleController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.CREATE_ROLE)
   @Post()
+  @ApiOperation({ summary: 'create role' })
+  @ApiBody({ type: CreateRoleDto })
+  @ApiOkResponseSuccess(CreateRoleResDto, 200)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBadRequestResponse({
+    description: 'Duplicated permission IDs found: ',
+  })
+  @ApiNotFoundResponse({
+    description: 'Permissions with IDs not found.',
+  })
+  @ApiConflictResponse({ description: 'Role already exists!' })
   create(@Body() createRoleDto: CreateRoleDto): Promise<Role> {
     return this.roleService.create(createRoleDto);
   }
@@ -37,13 +70,23 @@ export class RoleController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_ROLE)
   @Get()
-  findAll(): Promise<Role[]> {
-    return this.roleService.findAll();
+  @ApiOperation({ summary: 'get all roles' })
+  @ApiOkResponseSuccess(GetAllRoleResDto, 200)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiQuery({ type: GetRoleDto })
+  findAll(
+    @Query() getRoleDto?: GetRoleDto,
+  ): Promise<{ roles: Role[]; pageMeta: PageMetaDto }> {
+    return this.roleService.findAll(getRoleDto);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_ROLE)
   @Get(':id')
+  @ApiOperation({ summary: 'get a role with id' })
+  @ApiOkResponseSuccess(GetRoleResDto)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'Role not found!' })
   findOne(@Param('id') id: string): Promise<Role> {
     return this.roleService.findOne(+id);
   }
@@ -51,23 +94,53 @@ export class RoleController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.UPDATE_ROLE)
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a role' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'ID of the role to update',
+  })
+  @ApiBody({ type: UpdateRoleDto })
+  @ApiOkResponseSuccess(GetRoleResDto)
+  @ApiBadRequestResponse({ description: 'Bad request' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'Role not found' })
+  @ApiConflictResponse({ description: 'Role name already exists' })
   update(
     @Param('id') id: string,
     @Body() updateRoleDto: UpdateRoleDto,
-  ): Promise<Role>  {
+  ): Promise<Role> {
     return this.roleService.update(+id, updateRoleDto);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.DELETE_ROLE)
+  @ApiOperation({ summary: 'Delete a role' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'ID of the role to delete',
+  })
+  @ApiOkResponseSuccess(DeleteRoleResDto)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'Role not found' })
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<string> {
+  remove(@Param('id') id: string): Promise<DeleteRoleResDto> {
     return this.roleService.remove(+id);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_ROLE)
   @Get('/users/:userId')
+  @ApiOperation({ summary: 'Get user roles' })
+  @ApiParam({
+    name: 'userId',
+    required: true,
+    description: 'ID of the user to get roles for',
+  })
+  @ApiOkResponseSuccess(RoleUserResDto)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'User not found' })
   getUserRoles(@Param('userId', ParseUUIDPipe) userId: string): Promise<User> {
     return this.roleService.getUserRoles(userId);
   }
@@ -75,6 +148,19 @@ export class RoleController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.CREATE_ROLE)
   @Post(':id/users/:userId')
+  @ApiOperation({ summary: 'Assign a role to a user' })
+  @ApiParam({ name: 'id', description: 'The ID of the role', required: true })
+  @ApiParam({
+    name: 'userId',
+    description: 'The ID of the user',
+    required: true,
+  })
+  @ApiOkResponseSuccess(AssignRoleResDto)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'Role or user not found.' })
+  @ApiConflictResponse({
+    description: 'This role is already assigned to this user.',
+  })
   assignRoleToUser(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseUUIDPipe) userId: string,
@@ -85,10 +171,16 @@ export class RoleController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.DELETE_ROLE)
   @Delete(':id/users/:userId')
+  @ApiOperation({ summary: 'Delete a user role' })
+  @ApiParam({ name: 'id', description: 'The role ID', required: true })
+  @ApiParam({ name: 'userId', description: 'The user ID', required: true })
+  @ApiOkResponseSuccess(DeleteRoleUserResDto)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'Role or User not found.' })
   deleteUserRole(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseUUIDPipe) userId: string,
-  ): Promise<string> {
+  ): Promise<DeleteRoleUserResDto> {
     return this.roleService.deleteUserRole(id, userId);
   }
 }

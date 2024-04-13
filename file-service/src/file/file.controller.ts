@@ -12,7 +12,17 @@ import {
 } from '@nestjs/common';
 import { FileService } from './file.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { UploadFileDto } from './dto/upload-file.dto';
 import { ImageFilterInterceptor } from './interceptors/image-filter.interceptor';
 import { File } from './schemas/file.schema';
@@ -23,6 +33,9 @@ import {
 } from '@irole/microservices';
 import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
 import { PermissionGuard } from '../utils/guard/permission.guard';
+import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
+import { UploadFileResDto } from './dto/response/upload-file-res.dto';
+import { DeleteFileResDto } from './dto/response/delete-file-res.dto';
 
 @ApiTags('files')
 @Controller('files')
@@ -33,20 +46,35 @@ export class FileController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.CREATE_AVATAR)
   @Post('/upload/avatar')
+  @ApiOperation({
+    summary: 'Upload avatar',
+    description: 'Upload a new avatar for the user.',
+  })
+  @ApiOkResponseSuccess(UploadFileResDto)
+  @ApiBadRequestResponse({ description: 'Bad Request!' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
+  @ApiInternalServerErrorResponse()
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: UploadFileDto })
+  @ApiBody({
+    description: 'Upload avatar',
+    type: UploadFileDto,
+  })
   @UseInterceptors(FileInterceptor('file'), ImageFilterInterceptor)
   uploadAvatar(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any,
-  ): any {
+  ): Promise<File> {
     return this.fileService.uploadAvatar(file, req.user);
   }
 
+  // todo page meta add
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_FILE)
   @UseGuards(AccessTokenGuard)
   @Get()
+  @ApiOperation({ summary: 'Find all files' })
+  @ApiOkResponseSuccess(UploadFileResDto, 200, true)
+  @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
   findAll(): Promise<File[]> {
     return this.fileService.findAll();
   }
@@ -54,6 +82,10 @@ export class FileController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_FILE)
   @Get(':id')
+  @ApiOperation({ summary: 'Find one file' })
+  @ApiOkResponseSuccess(UploadFileResDto)
+  @ApiBadRequestResponse({ description: 'Bad Request!' })
+  @ApiNotFoundResponse({ description: 'File not found' })
   @UsePipes(new MongoIdValidationPipe())
   async findOne(@Param('id') id: string): Promise<File> {
     return this.fileService.findOne(id);
@@ -62,8 +94,12 @@ export class FileController {
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.DELETE_FILE)
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete one file' })
+  @ApiOkResponseSuccess(DeleteFileResDto)
+  @ApiBadRequestResponse({ description: 'Bad Request!' })
+  @ApiNotFoundResponse({ description: 'File not found' })
   @UsePipes(new MongoIdValidationPipe())
-  remove(@Param('id') id: string): Promise<string> {
+  remove(@Param('id') id: string): Promise<DeleteFileResDto> {
     return this.fileService.remove(id);
   }
 }

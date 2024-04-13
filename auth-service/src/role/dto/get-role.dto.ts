@@ -1,35 +1,20 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-import { SortEnum } from '../enum/sort.enum';
+import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { SortEnum } from '../../utils/enum/sort.enum';
 
-export class FindUsersDto {
-  @ApiPropertyOptional({ type: String })
-  @IsOptional()
-  @IsString()
-  is_delete: string;
-
-  @ApiPropertyOptional({ type: String })
-  @IsOptional()
-  @IsString()
-  is_active: string;
-
-  @ApiPropertyOptional({ type: String })
-  @IsOptional()
-  @IsString()
-  admin: string;
-
+export class GetRoleDto {
   @ApiPropertyOptional({ enum: SortEnum, default: SortEnum.ASC })
   @IsEnum(SortEnum)
   @IsOptional()
   readonly sort?: SortEnum = SortEnum.ASC;
 
   @ApiPropertyOptional({
-    enum: ['id', 'firstName', 'lastName', 'email', 'createdAt'],
-    default: 'createdAt',
+    enum: ['id', 'name', 'createdAt', 'updatedAt'],
+    default: 'id',
   })
   @IsOptional()
-  readonly sortField?: 'firstName' | 'lastName';
+  readonly sortField?: 'id' | 'name' | 'createdAt' | 'updatedAt';
 
   @ApiPropertyOptional({
     minimum: 1,
