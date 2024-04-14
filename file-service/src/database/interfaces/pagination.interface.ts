@@ -3,7 +3,7 @@ import { IPopulate } from './populate.inteface';
 export interface PaginationOptions {
   select?: string;
   sort?: object;
-  limit: number;
+  take: number;
   page: number;
   populate?: [IPopulate] | string;
   lean?: boolean;

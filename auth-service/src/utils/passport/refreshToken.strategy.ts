@@ -22,13 +22,15 @@ export class RefreshTokenStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: any, payload: JwtRefreshPayload): Promise<any> {
+  async validate(req: any, payload: JwtRefreshPayload): Promise<string> {
     // get refresh token
     const token = req.headers.authorization.split(' ')[1];
-    const redisRefreshToken = await this.redisRefresh.get(payload.authId);
-    if (token === redisRefreshToken) {
-      return payload.authId;
+    const redisRefreshToken: string = await this.redisRefresh.get(
+      payload.authId,
+    );
+    if (token !== redisRefreshToken) {
+      throw new UnauthorizedException();
     }
-    throw new UnauthorizedException();
+    return payload.authId;
   }
 }

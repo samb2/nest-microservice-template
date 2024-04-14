@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PageMetaDto } from '../../../utils/dto/page-meta.dto';
 
 export class UserDto {
   @ApiProperty()
@@ -30,26 +31,6 @@ export class UserDto {
 
   @ApiProperty()
   createdAt: Date;
-}
-
-export class PageMetaDto {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  take: number;
-
-  @ApiProperty()
-  itemCount: number;
-
-  @ApiProperty()
-  pageCount: number;
-
-  @ApiProperty()
-  hasPreviousPage: boolean;
-
-  @ApiProperty()
-  hasNextPage: boolean;
 }
 
 export class GetAllUsersResDto {

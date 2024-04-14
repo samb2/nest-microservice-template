@@ -2,8 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Permission } from './entities/permission.entity';
-import { GetPermissionDto } from './dto/get-permission.dto';
-import { PageMetaDto } from '../utils/page-meta.dto';
+import { GetPermissionQueryDto } from './dto/get-permission-query.dto';
+import { GetPermissionRes } from './dto/response/get-permissions-res.dto';
+import { PageMetaDto } from '../utils/dto/page-meta.dto';
 
 @Injectable()
 export class PermissionService {
@@ -13,8 +14,8 @@ export class PermissionService {
   ) {}
 
   async findAll(
-    getPermissionDto: GetPermissionDto,
-  ): Promise<{ permissions: Permission[]; pageMeta: PageMetaDto }> {
+    getPermissionDto: GetPermissionQueryDto,
+  ): Promise<GetPermissionRes> {
     const { sort, sortField, take, skip } = getPermissionDto;
     const orderField: string = sortField || 'id';
     const orderDirection: string = sort || 'ASC';

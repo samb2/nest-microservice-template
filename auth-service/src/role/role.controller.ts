@@ -34,8 +34,7 @@ import { User } from '../auth/entities/user.entity';
 import { UsersRoles } from '../auth/entities/users-roles.entity';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { CreateRoleResDto } from './dto/response/create-role-res.dto';
-import { GetRoleDto } from './dto/get-role.dto';
-import { PageMetaDto } from '../utils/page-meta.dto';
+import { GetRoleQueryDto } from './dto/get-role-query.dto';
 import { GetRoleResDto } from './dto/response/get-role-res.dto';
 import { GetAllRoleResDto } from './dto/response/get-all-role-res.dto';
 import { DeleteRoleResDto } from './dto/response/delete-role-res.dto';
@@ -73,10 +72,8 @@ export class RoleController {
   @ApiOperation({ summary: 'get all roles' })
   @ApiOkResponseSuccess(GetAllRoleResDto, 200)
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiQuery({ type: GetRoleDto })
-  findAll(
-    @Query() getRoleDto?: GetRoleDto,
-  ): Promise<{ roles: Role[]; pageMeta: PageMetaDto }> {
+  @ApiQuery({ type: GetRoleQueryDto })
+  findAll(@Query() getRoleDto?: GetRoleQueryDto): Promise<GetAllRoleResDto> {
     return this.roleService.findAll(getRoleDto);
   }
 

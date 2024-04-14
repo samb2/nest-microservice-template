@@ -18,6 +18,8 @@ class SuccessResponseDto<T> {
   statusCode: string;
   message: string;
   data: T;
+  path: string;
+  method: string;
 }
 
 export const ApiOkResponseSuccess = <DataDto extends Type<unknown>>(
@@ -56,6 +58,14 @@ export const ApiOkResponseSuccess = <DataDto extends Type<unknown>>(
                 : {
                     $ref: getSchemaPath(dataDto),
                   },
+              path: {
+                type: 'string',
+                default: 'api/',
+              },
+              method: {
+                type: 'string',
+                default: 'GET/POST/PATCH/DELETE',
+              },
             },
           },
         ],

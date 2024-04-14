@@ -1,30 +1,55 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UploadFileResDto {
-  @ApiProperty({})
-  id: string;
-
-  @ApiProperty({})
+export class BucketDTO {
+  @ApiProperty()
   name: string;
 
-  @ApiProperty({})
-  mimeType: string;
+  @ApiProperty()
+  id: string;
+}
 
-  @ApiProperty({})
-  size: number;
+export class ResultDTO {
+  @ApiProperty()
+  name: string;
 
-  @ApiProperty({})
+  @ApiProperty()
   key: string;
 
-  @ApiProperty({})
-  bucket: string;
+  @ApiProperty({ type: () => BucketDTO })
+  bucket: BucketDTO;
 
-  @ApiProperty({})
+  @ApiProperty()
   path: string;
 
-  @ApiProperty({})
+  @ApiProperty()
   uploadedBy: string;
 
   @ApiProperty({})
-  uploadedAt: string;
+  uploadedAt: Date;
+
+  @ApiProperty()
+  id: string;
+}
+
+export class UploadFileResDto {
+  @ApiProperty({ type: () => [ResultDTO] })
+  results: ResultDTO[];
+
+  @ApiProperty()
+  itemCount: number;
+
+  @ApiProperty()
+  pageCount: number;
+
+  @ApiProperty()
+  page: number;
+
+  @ApiProperty()
+  take: number;
+
+  @ApiProperty()
+  hasPreviousPage: boolean;
+
+  @ApiProperty()
+  hasNextPage: boolean;
 }

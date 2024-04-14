@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PageMetaDto } from '../../../utils/dto/page-meta.dto';
 
 export class RoleDto {
   @ApiProperty()
@@ -11,30 +12,10 @@ export class RoleDto {
   description: string | null;
 
   @ApiProperty()
-  createdAt: string;
+  createdAt: Date;
 
   @ApiProperty()
-  updatedAt: string;
-}
-
-export class PageMetaDto {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  take: number;
-
-  @ApiProperty()
-  itemCount: number;
-
-  @ApiProperty()
-  pageCount: number;
-
-  @ApiProperty()
-  hasPreviousPage: boolean;
-
-  @ApiProperty()
-  hasNextPage: boolean;
+  updatedAt: Date;
 }
 
 export class GetAllRoleResDto {

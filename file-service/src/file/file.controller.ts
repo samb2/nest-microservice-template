@@ -9,6 +9,7 @@ import {
   Req,
   UsePipes,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { FileService } from './file.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -36,6 +37,7 @@ import { PermissionGuard } from '../utils/guard/permission.guard';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { UploadFileResDto } from './dto/response/upload-file-res.dto';
 import { DeleteFileResDto } from './dto/response/delete-file-res.dto';
+import { GetFileQueryDto } from './dto/get-file-query.dto';
 
 @ApiTags('files')
 @Controller('files')
@@ -70,13 +72,12 @@ export class FileController {
   // todo page meta add
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_FILE)
-  @UseGuards(AccessTokenGuard)
   @Get()
   @ApiOperation({ summary: 'Find all files' })
   @ApiOkResponseSuccess(UploadFileResDto, 200, true)
   @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
-  findAll(): Promise<File[]> {
-    return this.fileService.findAll();
+  findAll(@Query() getFileDto?: GetFileQueryDto): Promise<File[]> {
+    return this.fileService.findAll(getFileDto);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)

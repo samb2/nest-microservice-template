@@ -17,10 +17,11 @@ import Redis from 'ioredis';
 import { PermissionEnum } from '@irole/microservices';
 import { User } from '../auth/entities/user.entity';
 import { UsersRoles } from '../auth/entities/users-roles.entity';
-import { GetRoleDto } from './dto/get-role.dto';
-import { PageMetaDto } from '../utils/page-meta.dto';
+import { GetRoleQueryDto } from './dto/get-role-query.dto';
 import { DeleteRoleResDto } from './dto/response/delete-role-res.dto';
 import { DeleteRoleUserResDto } from './dto/response/delete-role-user-res.dto';
+import { GetAllRoleResDto } from './dto/response/get-all-role-res.dto';
+import { PageMetaDto } from '../utils/dto/page-meta.dto';
 
 @Injectable()
 export class RoleService {
@@ -123,9 +124,7 @@ export class RoleService {
     }
   }
 
-  async findAll(
-    getRoleDto: GetRoleDto,
-  ): Promise<{ roles: Role[]; pageMeta: PageMetaDto }> {
+  async findAll(getRoleDto: GetRoleQueryDto): Promise<GetAllRoleResDto> {
     const { sort, sortField, take, skip } = getRoleDto;
     const orderField: string = sortField || 'id';
     const orderDirection: string = sort || 'ASC';

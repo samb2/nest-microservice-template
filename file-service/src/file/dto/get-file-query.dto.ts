@@ -1,20 +1,20 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
-import { SortEnum } from '../../utils/enum/sort.enum';
+import { SortEnum } from '@irole/microservices';
 
-export class GetPermissionDto {
+export class GetFileQueryDto {
   @ApiPropertyOptional({ enum: SortEnum, default: SortEnum.ASC })
   @IsEnum(SortEnum)
   @IsOptional()
   readonly sort?: SortEnum = SortEnum.ASC;
 
   @ApiPropertyOptional({
-    enum: ['id', 'access'],
+    enum: ['id', 'name', 'uploadedAt'],
     default: 'id',
   })
   @IsOptional()
-  readonly sortField?: 'id' | 'access';
+  readonly sortField?: 'id' | 'name' | 'uploadedAt';
 
   @ApiPropertyOptional({
     minimum: 1,

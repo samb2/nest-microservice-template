@@ -15,6 +15,7 @@ import { BucketEnum } from '../minio/bucket.enum';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { FileMicroserviceService } from './microservice/file-microservice.service';
 import { DeleteFileResDto } from './dto/response/delete-file-res.dto';
+import { GetFileQueryDto } from './dto/get-file-query.dto';
 
 @Injectable()
 export class FileService {
@@ -85,11 +86,24 @@ export class FileService {
     }
   }
 
-  async findAll(): Promise<File[]> {
-    return await this.fileRepo.find(
+  async findAll(getFileDto: GetFileQueryDto): Promise<File[]> {
+    const { sortField, take, page } = getFileDto;
+
+    const sort = sortField
+      ? { [sortField]: getFileDto.sort === 'ASC' ? 1 : -1 }
+      : undefined;
+
+    return await this.fileRepo.paginate(
       {},
-      { name: true, key: true, path: true, bucket: true, uploadedBy: true },
-      { populate: 'bucket' },
+      {
+        name: true,
+        key: true,
+        path: true,
+        bucket: true,
+        uploadedBy: true,
+        uploadedAt: true,
+      },
+      { populate: 'bucket', page, take, sort },
     );
   }
 

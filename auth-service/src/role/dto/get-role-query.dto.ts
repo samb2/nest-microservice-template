@@ -1,9 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
-import { SortEnum } from '../../utils/enum/sort.enum';
+import { SortEnum } from '@irole/microservices';
 
-export class GetRoleDto {
+export class GetRoleQueryDto {
   @ApiPropertyOptional({ enum: SortEnum, default: SortEnum.ASC })
   @IsEnum(SortEnum)
   @IsOptional()

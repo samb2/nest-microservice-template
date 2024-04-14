@@ -1,3 +1,4 @@
+import { ServiceNameEnum } from '@irole/microservices';
 import { applyDecorators, Type } from '@nestjs/common';
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 
@@ -12,11 +13,13 @@ const statusMessages = {
 };
 
 class SuccessResponseDto<T> {
-  from: string = 'AUTH-SERVICE';
+  from: string = ServiceNameEnum.FILE;
   success: boolean;
   statusCode: string;
   message: string;
   data: T;
+  path: string;
+  method: string;
 }
 
 export const ApiOkResponseSuccess = <DataDto extends Type<unknown>>(
@@ -34,7 +37,7 @@ export const ApiOkResponseSuccess = <DataDto extends Type<unknown>>(
             properties: {
               from: {
                 type: 'string',
-                default: 'AUTH-SERVICE',
+                default: ServiceNameEnum.FILE,
               },
               success: {
                 type: 'true',
@@ -55,6 +58,14 @@ export const ApiOkResponseSuccess = <DataDto extends Type<unknown>>(
                 : {
                     $ref: getSchemaPath(dataDto),
                   },
+              path: {
+                type: 'string',
+                default: 'api/',
+              },
+              method: {
+                type: 'string',
+                default: 'GET/POST/PATCH/DELETE',
+              },
             },
           },
         ],

@@ -1,35 +1,20 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { SortEnum } from '@irole/microservices';
 
-export class FindUsersQueryDto {
-  @ApiPropertyOptional({ type: String })
-  @IsOptional()
-  @IsString()
-  is_delete: string;
-
-  @ApiPropertyOptional({ type: String })
-  @IsOptional()
-  @IsString()
-  is_active: string;
-
-  @ApiPropertyOptional({ type: String })
-  @IsOptional()
-  @IsString()
-  admin: string;
-
+export class GetPermissionQueryDto {
   @ApiPropertyOptional({ enum: SortEnum, default: SortEnum.ASC })
   @IsEnum(SortEnum)
   @IsOptional()
   readonly sort?: SortEnum = SortEnum.ASC;
 
   @ApiPropertyOptional({
-    enum: ['id', 'firstName', 'lastName', 'email', 'createdAt'],
-    default: 'createdAt',
+    enum: ['id', 'access'],
+    default: 'id',
   })
   @IsOptional()
-  readonly sortField?: 'firstName' | 'lastName';
+  readonly sortField?: 'id' | 'access';
 
   @ApiPropertyOptional({
     minimum: 1,

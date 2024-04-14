@@ -21,8 +21,7 @@ import { PermissionGuard } from '../utils/guard/permission.guard';
 import { PermissionEnum, Permissions } from '@irole/microservices';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { GetPermissionRes } from './dto/response/get-permissions-res.dto';
-import { GetPermissionDto } from './dto/get-permission.dto';
-import { PageMetaDto } from '../utils/page-meta.dto';
+import { GetPermissionQueryDto } from './dto/get-permission-query.dto';
 
 @ApiTags('permissions')
 @ApiBearerAuth()
@@ -37,8 +36,8 @@ export class PermissionController {
   @ApiOkResponseSuccess(GetPermissionRes, 200, true)
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   findAll(
-    @Query() getPermissionDto?: GetPermissionDto,
-  ): Promise<{ permissions: Permission[]; pageMeta: PageMetaDto }> {
+    @Query() getPermissionDto?: GetPermissionQueryDto,
+  ): Promise<GetPermissionRes> {
     return this.permissionService.findAll(getPermissionDto);
   }
 

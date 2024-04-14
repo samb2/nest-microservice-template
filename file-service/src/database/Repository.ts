@@ -59,10 +59,10 @@ export default class Repository<T extends Document> implements IRepository<T> {
     options?: PaginationOptions,
     cache: ICache | undefined = undefined,
   ): Promise<any> {
-    const { limit, page } = options;
+    const { take, page } = options;
     let results: any;
 
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * take;
 
     if (cache) {
       results = await this.model.find(where, projection, { ...options, skip });
@@ -72,16 +72,22 @@ export default class Repository<T extends Document> implements IRepository<T> {
         .exec();
     }
 
-    const count: number = await this.model.countDocuments(where);
+    const itemCount: number = await this.model.countDocuments(where);
 
-    const totalPages: number = Math.ceil(count / limit);
+    const pageCount: number = Math.ceil(itemCount / take);
+
+    // Calculate hasPreviousPage and hasNextPage
+    const hasPreviousPage: boolean = page > 1;
+    const hasNextPage: boolean = page < pageCount;
 
     return {
       results,
-      count,
-      totalPages,
+      itemCount,
+      pageCount,
       page,
-      limit,
+      take,
+      hasPreviousPage,
+      hasNextPage,
     };
   }
 
