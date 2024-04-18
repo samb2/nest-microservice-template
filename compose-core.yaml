@@ -1,0 +1,146 @@
+services:
+  postgres:
+    image: postgres
+    restart: always
+    user: postgres
+    container_name: postgres-service
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    command: postgres -c 'max_connections=500' -c 'idle_in_transaction_session_timeout=20000' -c 'statement_timeout=20000'
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_MULTIPLE_DATABASES=auth-dev,auth-test,user,user-dev,user-test
+    volumes:
+      - postgres:/var/lib/postgresql/data/:rw
+      - ./entrypoint.sh:/docker-entrypoint-initdb.d/entrypoint.sh
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  mongo-file:
+    image: mongo
+    hostname: mongo
+    restart: always
+    container_name: mongo-file
+    ports:
+      - "27017:27017"
+    networks:
+      - backend
+    volumes:
+      - mongo_data:/data/db
+      - mongo_data:/data/configdb
+    command: [ "--bind_ip", "0.0.0.0" ]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' mongo localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  minio:
+    image: "minio/minio"
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: minio server /data --console-address ":9001"
+    container_name: minio-file
+    env_file:
+      - .env
+    volumes:
+      - minio:/data
+    environment:
+      - MINIO_ROOT_USER=${FILE_MINIO_USER}
+      - MINIO_ROOT_PASSWORD=${FILE_MINIO_PASSWORD}
+    networks:
+      - backend
+
+  redis-auth:
+    image: redis/redis-stack:latest
+    restart: always
+    container_name: redis-auth
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - redis_auth:/data
+    networks:
+      - backend
+
+  redis-common:
+    image: redis/redis-stack:latest
+    restart: always
+    container_name: redis-common
+    ports:
+      - "6380:6379"
+      - "8002:8001"
+    volumes:
+      - redis_common:/data
+    networks:
+      - backend
+
+  rabbitmq:
+    image: rabbitmq:latest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    networks:
+      - backend
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    networks:
+      - backend
+
+  portainer:
+    image: portainer/portainer-ce
+    container_name: portainer
+    restart: always
+    ports:
+      - "9003:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer:/data
+    networks:
+      - backend
+
+volumes:
+  portainer:
+  pgadmin:
+  postgres:
+  mongo_data:
+  rabbit_data:
+  minio:
+  redis_auth:
+  redis_common:
+
+networks:
+  backend:
+    driver: bridge
+
+
