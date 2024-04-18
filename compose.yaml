@@ -1,59 +1,59 @@
 services:
-  #  file-service:
-  #    build:
-  #      context: ./file-service
-  #    environment:
-  #      NODE_ENV: production
-  #    container_name: file-service
-  #    ports:
-  #      - "4000:4000"
-  #    networks:
-  #      - file_service
-  #    depends_on:
-  #      mongo-file:
-  #        condition: service_healthy
-  #      redis-common:
-  #        condition: service_started
-  #      rabbitmq:
-  #        condition: service_started
-  #
-  #  user-service:
-  #    build:
-  #      context: ./user-service
-  #    environment:
-  #      NODE_ENV: production
-  #    container_name: user-service
-  #    ports:
-  #      - "2000:2000"
-  #    networks:
-  #      - user_service
-  #    depends_on:
-  #      postgres:
-  #        condition: service_healthy
-  #      redis-common:
-  #        condition: service_started
-  #      rabbitmq:
-  #        condition: service_started
-  #
-  #  auth-service:
-  #    build:
-  #      context: ./auth-service
-  #    environment:
-  #      NODE_ENV: production
-  #    container_name: auth-service
-  #    ports:
-  #      - "3000:3000"
-  #    networks:
-  #      - auth_service
-  #    depends_on:
-  #      postgres:
-  #        condition: service_healthy
-  #      redis-auth:
-  #        condition: service_started
-  #      redis-common:
-  #        condition: service_started
-  #      rabbitmq:
-  #        condition: service_started
+  file-service:
+    build:
+      context: ./file-service
+    environment:
+      NODE_ENV: production
+    container_name: file-service
+    ports:
+      - "4000:4000"
+    networks:
+      - file_network
+    depends_on:
+      mongo-file:
+        condition: service_healthy
+      redis-common:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+
+  user-service:
+    build:
+      context: ./user-service
+    environment:
+      NODE_ENV: production
+    container_name: user-service
+    ports:
+      - "2000:2000"
+    networks:
+      - user_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-common:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+
+  auth-service:
+    build:
+      context: ./auth-service
+    environment:
+      NODE_ENV: production
+    container_name: auth-service
+    ports:
+      - "3000:3000"
+    networks:
+      - auth_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-auth:
+        condition: service_started
+      redis-common:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
 
   postgres:
     image: postgres
@@ -79,8 +79,8 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - auth_service
-      - user_service
+      - auth_network
+      - user_network
 
   mongo-file:
     image: mongo
@@ -90,9 +90,10 @@ services:
     ports:
       - "27017:27017"
     networks:
-      - file_service
+      - file_network
     volumes:
-      - mongo-file:/data/db
+      - mongo_data:/data/db
+      - mongo_data:/data/configdb
     command: [ "--bind_ip", "0.0.0.0" ]
     healthcheck:
       test: echo 'db.runCommand("ping").ok' mongo localhost:27017/test --quiet
@@ -116,7 +117,7 @@ services:
       - MINIO_ROOT_USER=${FILE_MINIO_USER}
       - MINIO_ROOT_PASSWORD=${FILE_MINIO_PASSWORD}
     networks:
-      - file_service
+      - file_network
 
   redis-auth:
     image: redis/redis-stack:latest
@@ -126,9 +127,9 @@ services:
       - "6379:6379"
       - "8001:8001"
     volumes:
-      - redis-auth:/data
+      - redis_auth:/data
     networks:
-      - auth_service
+      - auth_network
 
   redis-common:
     image: redis/redis-stack:latest
@@ -138,11 +139,11 @@ services:
       - "6380:6379"
       - "8002:8001"
     volumes:
-      - redis-common:/data
+      - redis_common:/data
     networks:
-      - file_service
-      - auth_service
-      - user_service
+      - file_network
+      - auth_network
+      - user_network
 
   rabbitmq:
     image: rabbitmq:latest
@@ -157,9 +158,9 @@ services:
     volumes:
       - rabbit_data:/var/lib/rabbitmq
     networks:
-      - file_service
-      - auth_service
-      - user_service
+      - file_network
+      - auth_network
+      - user_network
 
   pgadmin:
     image: dpage/pgadmin4
@@ -175,8 +176,8 @@ services:
     volumes:
       - pgadmin:/var/lib/pgadmin
     networks:
-      - auth_service
-      - user_service
+      - auth_network
+      - user_network
 
   portainer:
     image: portainer/portainer-ce
@@ -188,26 +189,26 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer:/data
     networks:
-      - auth_service
-      - user_service
-      - file_service
+      - auth_network
+      - user_network
+      - file_network
 
 volumes:
   portainer:
   pgadmin:
   postgres:
-  mongo-file:
+  mongo_data:
   rabbit_data:
   minio:
-  redis-auth:
-  redis-common:
+  redis_auth:
+  redis_common:
 
 networks:
-  file_service:
+  file_network:
     driver: bridge
-  auth_service:
+  auth_network:
     driver: bridge
-  user_service:
+  user_network:
     driver: bridge
 
 

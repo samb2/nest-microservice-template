@@ -13,7 +13,7 @@ import { Repository } from 'typeorm';
 import { UserMicroserviceService } from './microservice/user-microservice.service';
 import { GetUserResDto } from './dto/response/get-user-res.dto';
 import { GetAllUsersResDto } from './dto/response/get-all-users-res.dto';
-import { PageMetaDto } from "../utils/dto/page-meta.dto";
+import { PageMetaDto } from '../utils/dto/page-meta.dto';
 
 @Injectable()
 export class UserService {
