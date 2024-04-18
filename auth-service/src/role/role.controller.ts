@@ -112,6 +112,7 @@ export class RoleController {
 
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.DELETE_ROLE)
+  @Delete(':id')
   @ApiOperation({ summary: 'Delete a role' })
   @ApiParam({
     name: 'id',
@@ -121,7 +122,6 @@ export class RoleController {
   @ApiOkResponseSuccess(DeleteRoleResDto)
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiNotFoundResponse({ description: 'Role not found' })
-  @Delete(':id')
   remove(@Param('id') id: string): Promise<DeleteRoleResDto> {
     return this.roleService.remove(+id);
   }

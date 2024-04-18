@@ -102,7 +102,7 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('should register a new user successfully', async () => {
-      jest.spyOn(authService, 'userExists').mockResolvedValue(false);
+      //jest.spyOn(authService, 'userExists').mockResolvedValue(false);
 
       const result: RegisterResDto = await authService.register(validUser);
 
@@ -112,7 +112,7 @@ describe('AuthService', () => {
     });
 
     it('should throw error if user already exists', async () => {
-      jest.spyOn(authService, 'userExists').mockResolvedValue(true);
+      //jest.spyOn(authService, 'userExists').mockResolvedValue(true);
 
       await expect(authService.register(validUser)).rejects.toThrowError(
         ConflictException,

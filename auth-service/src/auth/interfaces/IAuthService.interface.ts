@@ -26,9 +26,5 @@ export interface IAuthServiceInterface {
 
   logout(user: User): Promise<object>;
 
-  userExists(email: string): Promise<boolean>;
-
-  validateUserByEmail(email: string): Promise<User | undefined>;
-
-  //generateToken(payload: object, type: TokenTypeEnum): string;
+  validateUserByAuthId(id: string): Promise<User | undefined>;
 }

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -48,7 +48,14 @@ export class AuthMicroserviceService {
 
   public async validateUserByAuthId(id: string): Promise<User | undefined> {
     return this.userRepository.findOne({
-      where: { id, isDelete: false },
+      where: { id, isDelete: false, isActive: true },
+      select: {
+        id: true,
+        isActive: true,
+        email: true,
+        isDelete: true,
+        createdAt: true,
+      },
     });
   }
 
@@ -61,10 +68,7 @@ export class AuthMicroserviceService {
     try {
       const user: User = await this.validateUserByAuthId(payload.data.authId);
       if (!user) {
-        return generateResMessage(payload.from, payload.to, null, true, {
-          message: 'User Not Found',
-          status: 404,
-        });
+        throw new NotFoundException('User Not Found');
       }
       channel.ack(originalMsg);
       return generateResMessage(payload.from, payload.to, user, false);
@@ -120,6 +124,7 @@ export class AuthMicroserviceService {
     try {
       const user: User = await this.userRepository.findOne({
         where: { id: updateUserPasswordDto.data.authId },
+        select: { id: true, password: true },
       });
 
       const compare: boolean = await comparePassword(

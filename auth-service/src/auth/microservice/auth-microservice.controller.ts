@@ -39,7 +39,7 @@ export class AuthMicroserviceController {
   public async getUserById(
     @Payload() payload: MicroResInterface,
     @Ctx() context: RmqContext,
-  ): Promise<any> {
+  ): Promise<MicroResInterface> {
     return this.authMicroserviceService.verifyToken(payload, context);
   }
 }

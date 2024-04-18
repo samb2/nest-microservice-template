@@ -38,6 +38,7 @@ import { AuthMicroserviceService } from './microservice/auth-microservice.servic
 import { TokenService } from '../token/token.service';
 import { TokenTypeEnum } from '../token/enum/token-type.enum';
 import { LogoutResDto } from './dto/response/logout-res.dto';
+import { JwtForgotPayload } from './interfaces/Jwt-forgot-payload';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
@@ -56,35 +57,39 @@ export class AuthService implements IAuthServiceInterface {
   public async register(registerDto: RegisterDto): Promise<RegisterResDto> {
     const { email, password } = registerDto;
     const queryRunner: QueryRunner = await createTransaction(this.dataSource);
-    const userRepository: Repository<User> =
-      queryRunner.manager.getRepository(User);
+    const userRep: Repository<User> = queryRunner.manager.getRepository(User);
+    const roleRep: Repository<Role> = queryRunner.manager.getRepository(Role);
+    const usersRolesRep: Repository<UsersRoles> =
+      queryRunner.manager.getRepository(UsersRoles);
     try {
-      if (await this.userExists(email)) {
+      const userExist: User = await userRep.findOne({ where: { email } });
+      if (userExist) {
         throw new ConflictException('This user is already registered!');
       }
 
       const hashedPassword: string = await bcryptPassword(password);
 
-      const user: User = userRepository.create({
+      const user: User = userRep.create({
         email,
         password: hashedPassword,
       });
-      await userRepository.save(user);
+      await userRep.save(user);
 
       // Role
-      const role: Role = await queryRunner.manager.getRepository(Role).findOne({
+      const role: Role = await roleRep.findOne({
         where: {
           name: RoleEnum.USER,
         },
+        select: {
+          id: true,
+        },
       });
 
-      const usersRoles: UsersRoles = queryRunner.manager
-        .getRepository(UsersRoles)
-        .create({
-          user,
-          role,
-        });
-      await queryRunner.manager.getRepository(UsersRoles).save(usersRoles);
+      const usersRoles: UsersRoles = usersRolesRep.create({
+        user,
+        role,
+      });
+      await usersRolesRep.save(usersRoles);
 
       //---------------------------------------
 
@@ -117,7 +122,19 @@ export class AuthService implements IAuthServiceInterface {
   public async login(loginDto: LoginDto): Promise<LoginResDto> {
     const { email, password } = loginDto;
     try {
-      const user: User = await this.validateUserByEmail(email);
+      const user: User = await this.userRepository.findOne({
+        where: { email, isDelete: false },
+        select: {
+          id: true,
+          password: true,
+          isActive: true,
+          userRoles: {
+            id: true,
+            role: { id: true },
+          },
+        },
+        relations: ['userRoles', 'userRoles.role'],
+      });
       if (!user || !(await comparePassword(password, user.password))) {
         throw new UnauthorizedException('Invalid username or password!');
       }
@@ -146,7 +163,7 @@ export class AuthService implements IAuthServiceInterface {
         TokenTypeEnum.ACCESS,
       );
       // Save Refresh Token In Cache
-      await this.redisRefresh.set(user.id, refresh_token);
+      await this.redisRefresh.set(`REFRESH-${user.id}`, refresh_token);
 
       return { user, access_token, refresh_token };
     } catch (e) {
@@ -159,14 +176,18 @@ export class AuthService implements IAuthServiceInterface {
   ): Promise<ForgotPasswordResDto> {
     const { email } = forgotPasswordDto;
     try {
-      const user: User = await this.validateUserByEmail(email);
+      const user: User = await this.userRepository.findOne({
+        where: { email, isDelete: false },
+        select: {
+          id: true,
+          isActive: true,
+        },
+      });
+      const payload: JwtForgotPayload = { authId: user.id };
       if (user && user.isActive) {
         const resetPassword: ResetPassword = this.resetPasswordRep.create({
           user: user,
-          token: this.tokenService.generateToken(
-            { authId: user.id },
-            TokenTypeEnum.EMAIL,
-          ),
+          token: this.tokenService.generateToken(payload, TokenTypeEnum.EMAIL),
         });
 
         await this.resetPasswordRep.save(resetPassword);
@@ -182,9 +203,12 @@ export class AuthService implements IAuthServiceInterface {
     resetPasswordDto: ResetPasswordDto,
   ): Promise<ResetPasswordResDto> {
     const { password, token } = resetPasswordDto;
-
+    let payload: JwtForgotPayload;
     try {
-      this.tokenService.verify(token, this.configService.get('jwt.email_key'));
+      payload = this.tokenService.verify(
+        token,
+        this.configService.get('jwt.email_key'),
+      );
     } catch (error) {
       if (error instanceof TokenExpiredError) {
         throw new ForbiddenException('This Token Expired');
@@ -192,36 +216,24 @@ export class AuthService implements IAuthServiceInterface {
       throw new ForbiddenException('Invalid token');
     }
     try {
-      // Check Token Exist
-      const resetPassword: ResetPassword = await this.resetPasswordRep.findOne({
+      const resetPasswords: ResetPassword[] = await this.resetPasswordRep.find({
         where: {
-          token,
           use: false,
+          user: {
+            id: payload.authId,
+          },
         },
         select: {
           id: true,
           createdAt: true,
-          user: {
-            id: true,
-          },
+          token: true,
         },
-        relations: ['user'],
+        order: { createdAt: 'DESC' },
       });
-
-      if (!resetPassword) {
+      if (resetPasswords.length === 0) {
         throw new ForbiddenException('This Token Expired');
       }
-
-      // Get the latest reset password for user
-      const latestResetPassword = await this.resetPasswordRep
-        .createQueryBuilder('resetPassword')
-        .where('resetPassword.user = :userId', {
-          userId: resetPassword.user.id,
-        })
-        .orderBy('resetPassword.createdAt', 'DESC')
-        .getOne();
-      // Compare dates
-      if (resetPassword.createdAt < latestResetPassword.createdAt) {
+      if (resetPasswords[0].token !== token) {
         throw new ForbiddenException('This Token Expired');
       }
       // Start a new transaction
@@ -230,14 +242,18 @@ export class AuthService implements IAuthServiceInterface {
           // Update ResetPassword Use to True
           await transactionalEntityManager.update(
             ResetPassword,
-            resetPassword.id,
+            { id: resetPasswords[0].id },
             { use: true },
           );
 
           // Update User Password
-          await transactionalEntityManager.update(User, resetPassword.user.id, {
-            password: await bcryptPassword(password),
-          });
+          await transactionalEntityManager.update(
+            User,
+            { id: payload.authId },
+            {
+              password: await bcryptPassword(password),
+            },
+          );
         },
       );
       return { message: 'Your password Changed Successfully' };
@@ -261,28 +277,22 @@ export class AuthService implements IAuthServiceInterface {
 
   public async logout(user: User): Promise<LogoutResDto> {
     try {
-      await this.redisRefresh.set(user.id, '');
+      await this.redisRefresh.set(`REFRESH-${user.id}`, '');
       return { message: 'Logout Successfully' };
     } catch (e) {
       throw e;
     }
   }
 
-  public async userExists(email: string): Promise<boolean> {
-    const user: User = await this.userRepository.findOne({ where: { email } });
-    return !!user;
-  }
-
-  public async validateUserByEmail(email: string): Promise<User | undefined> {
-    return this.userRepository.findOne({
-      where: { email, isDelete: false },
-      relations: ['userRoles', 'userRoles.role'],
-    });
-  }
-
   public async validateUserByAuthId(id: string): Promise<User | undefined> {
     return this.userRepository.findOne({
-      where: { id, isDelete: false },
+      where: { id, isDelete: false, isActive: true },
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        superAdmin: true,
+      },
     });
   }
 }

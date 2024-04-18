@@ -16,38 +16,41 @@ export class PermissionGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Retrieve the permission metadata set on the route handler
     const permission = this.reflector.get<string>(
       'permission',
       context.getHandler(),
     );
+    // If no permission is set, allow access
     if (!permission) {
       return true;
     }
+
+    // Retrieve the request object
     const req = context.switchToHttp().getRequest();
+
+    // Allow access for super admin
     if (req.user.superAdmin) {
       return true;
     }
-    const roles: number[] = req.roles;
-    const userPermissions: string[] = [];
-    const promises: any[] = [];
-    for (const role of roles) {
-      promises.push(this.redisCommon.get(role.toString()));
-    }
+
+    // Retrieve permissions from Redis for each role asynchronously
+    const promises: Promise<string>[] = req.roles.map((role) =>
+      this.redisCommon.get(`role-${role.toString()}`),
+    );
     const redisPermissions: string[] = await Promise.all(promises);
+    // Parse Redis permissions and add them to the userPermissions array
+    const permissions: any[] = redisPermissions.map((redisPermission) =>
+      JSON.parse(redisPermission),
+    );
+    const userPermissions: string[] = permissions.flat();
 
-    const permissions: any[] = JSON.parse(redisPermissions[0]);
-
-    for (const permission1 of permissions) {
-      userPermissions.push(permission1);
-    }
+    // Extract the access name from the permission and check for manage permission
     const accessName: string = permission.split('_')[1];
     const manage: string = `manage_${accessName}`;
-    if (userPermissions.includes(manage)) {
-      return true;
-    }
-    if (userPermissions.includes(permission)) {
-      return true;
-    }
-    return false;
+    // Allow access if the user has the manage permission or the specific permission
+    return (
+      userPermissions.includes(manage) || userPermissions.includes(permission)
+    );
   }
 }

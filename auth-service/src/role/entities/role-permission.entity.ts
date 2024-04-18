@@ -9,7 +9,7 @@ import { Permission } from '../../permission/entities/permission.entity';
 import { Role } from './role.entity';
 
 @Unique(['role', 'permission'])
-@Entity({ name: 'roles-permissions' })
+@Entity({ name: 'roles_permissions' })
 export class RolePermission {
   @PrimaryGeneratedColumn('uuid') // Specify 'uuid' type for the primary key
   id: string;

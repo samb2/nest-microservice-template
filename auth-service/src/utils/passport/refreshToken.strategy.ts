@@ -26,7 +26,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
     // get refresh token
     const token = req.headers.authorization.split(' ')[1];
     const redisRefreshToken: string = await this.redisRefresh.get(
-      payload.authId,
+      `REFRESH-${payload.authId}`,
     );
     if (token !== redisRefreshToken) {
       throw new UnauthorizedException();

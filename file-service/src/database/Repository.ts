@@ -3,11 +3,13 @@ import {
   FilterQuery,
   InsertManyOptions,
   Model,
+  MongooseBaseQueryOptions,
   ProjectionType,
   QueryOptions,
   Types,
   UpdateQuery,
   UpdateWithAggregationPipeline,
+  MongooseUpdateQueryOptions,
 } from 'mongoose';
 import { ICache } from './interfaces/cache.interface';
 import { PaginationOptions } from './interfaces/pagination.interface';
@@ -95,7 +97,7 @@ export default class Repository<T extends Document> implements IRepository<T> {
   async update(
     where?: FilterQuery<T>,
     update?: UpdateQuery<T> | UpdateWithAggregationPipeline,
-    options?: QueryOptions<T> | null,
+    options?: MongooseUpdateQueryOptions<T> | null,
   ): Promise<any> {
     return this.model.updateOne(where, update, options);
   }
@@ -103,7 +105,7 @@ export default class Repository<T extends Document> implements IRepository<T> {
   async updateMany(
     where?: FilterQuery<T>,
     update?: UpdateQuery<T> | UpdateWithAggregationPipeline,
-    options?: QueryOptions<T> | null,
+    options?: MongooseUpdateQueryOptions<T> | null,
   ): Promise<any> {
     return this.model.updateMany(where, update, options);
   }
@@ -127,7 +129,7 @@ export default class Repository<T extends Document> implements IRepository<T> {
   // Delete
   async deleteMany(
     where?: FilterQuery<T>,
-    options?: QueryOptions<T>,
+    options?: MongooseBaseQueryOptions<T> | null,
   ): Promise<any> {
     return this.model.deleteMany(where, options);
   }
