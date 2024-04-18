@@ -24,23 +24,22 @@ export class UserService {
   ) {}
 
   async findAll(findUsersDto?: FindUsersQueryDto): Promise<GetAllUsersResDto> {
+    // Destructure query parameters or set default values if not provided
     const { is_active, admin, is_delete, sort, sortField, take, skip } =
       findUsersDto;
-    const whereConditions: any = {};
 
-    if (is_delete !== undefined) {
-      whereConditions.isDelete = is_delete;
-    }
-    if (is_active !== undefined) {
-      whereConditions.isActive = is_active;
-    }
-    if (admin !== undefined) {
-      whereConditions.admin = admin;
-    }
+    // Initialize whereConditions object to build the WHERE clause for filtering
+    const whereConditions: any = {
+      ...(is_delete !== undefined ? { isDelete: is_delete } : {}),
+      ...(is_active !== undefined ? { isActive: is_active } : {}),
+      ...(admin !== undefined ? { admin: admin } : {}),
+    };
 
+    // Determine the sorting order and field
     const orderField: string = sortField || 'createdAt';
     const orderDirection: string = sort || 'ASC';
 
+    // Retrieve users and total count based on provided criteria
     const [users, itemCount] = await this.userRepository.findAndCount({
       where: whereConditions,
       select: {
@@ -62,7 +61,8 @@ export class UserService {
       },
     });
 
-    const pageMeta = new PageMetaDto({
+    // Generate pagination metadata
+    const pageMeta: PageMetaDto = new PageMetaDto({
       metaData: findUsersDto,
       itemCount,
     });
@@ -71,6 +71,7 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<GetUserResDto> {
+    // Find the user by ID
     const user: User = await this.userRepository.findOne({
       where: {
         id,
@@ -88,9 +89,13 @@ export class UserService {
         authId: true,
       },
     });
+
+    // If user is not found, throw NotFoundException
     if (!user) {
       throw new NotFoundException('User not found!');
     }
+
+    // Return the retrieved user
     return user;
   }
 
@@ -98,33 +103,56 @@ export class UserService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UpdateUserResDto> {
+    // Find the user by ID
     const user: User = await this.userRepository.findOne({
       where: {
         id,
       },
+      select: {
+        id: true,
+        authId: true,
+        firstName: true,
+        lastName: true,
+        isDelete: true,
+        isActive: true,
+        admin: true,
+      },
     });
+
+    // If user is not found, throw NotFoundException
     if (!user) {
       throw new NotFoundException('User not found!');
     }
-    Object.assign(user, updateUserDto);
-    //---------------------------------------
 
+    // Update user properties with the values from the DTO
+    Object.assign(user, updateUserDto);
+
+    // Prepare payload for updating user in the authentication service
     const payload = {
       authId: user.authId,
-      updateUserDto,
+      updateUserDto: {
+        isActive: user.isActive,
+        isDelete: user.isDelete,
+        admin: user.admin,
+      },
     };
 
+    // Send request to the user microservice to update the user in the authentication service
     const result: MicroResInterface =
       await this.userMicroserviceService.sendToAuthService(
         PatternEnum.AUTH_UPDATE_USER,
         payload,
       );
 
+    // If there's an error response from the user microservice, throw an InternalServerErrorException
     if (result.error) {
       throw new InternalServerErrorException(result.reason.message);
     }
 
+    // Save the updated user entity
     await this.userRepository.save(user);
+
+    // Return success message
     return { message: 'The user has been successfully updated.' };
   }
 

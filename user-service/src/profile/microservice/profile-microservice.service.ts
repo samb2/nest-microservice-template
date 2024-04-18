@@ -28,30 +28,51 @@ export class ProfileMicroserviceService {
     updateAvatarDto: UpdateAvatarDto,
     context: RmqContext,
   ): Promise<MicroResInterface> {
+    // Get the channel and original message from the RabbitMQ context
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
+
     try {
+      // Find the user by authId from the repository
       const user: User = await this.userRepository.findOne({
         where: {
           authId: updateAvatarDto.data.authId,
         },
+        select: {
+          id: true,
+          avatar: true,
+        },
       });
+
+      // If user is not found, throw NotFoundException
       if (!user) {
         throw new NotFoundException('user not found!');
       }
+
+      // Initialize data object with default values
       let data: object = {
         delete: false,
         avatar: null,
       };
+
+      // If user has an existing avatar, set delete to true and extract avatar path
       if (user.avatar) {
         data = {
           delete: true,
           avatar: user.avatar.replace('avatar/', ''),
         };
       }
+
+      // Update user's avatar with the new avatar path
       user.avatar = updateAvatarDto.data.avatar;
+
+      // Save the updated user entity
       await this.userRepository.save(user);
+
+      // Acknowledge the message in the RabbitMQ channel
       channel.ack(originalMsg);
+
+      // Generate response message with success status
       return generateResMessage(
         ServiceNameEnum.USER,
         ServiceNameEnum.FILE,
@@ -59,7 +80,10 @@ export class ProfileMicroserviceService {
         false,
       );
     } catch (e) {
+      // If an error occurs, reject the message in the RabbitMQ channel
       await channel.reject(originalMsg, false);
+
+      // Generate response message with error status
       return generateResMessage(
         ServiceNameEnum.USER,
         ServiceNameEnum.FILE,
@@ -77,21 +101,37 @@ export class ProfileMicroserviceService {
     deleteAvatarDto: DeleteAvatarDto,
     context: RmqContext,
   ): Promise<MicroResInterface> {
+    // Get the channel and original message from the RabbitMQ context
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
+
     try {
+      // Find the user by authId from the repository
       const user: User = await this.userRepository.findOne({
         where: {
           authId: deleteAvatarDto.data.authId,
         },
+        select: {
+          id: true,
+          avatar: true,
+        },
       });
+
+      // If user is not found, throw NotFoundException
       if (!user) {
         throw new NotFoundException('user not found!');
       }
 
+      // Set user's avatar to null to delete it
       user.avatar = null;
+
+      // Save the updated user entity
       await this.userRepository.save(user);
+
+      // Acknowledge the message in the RabbitMQ channel
       channel.ack(originalMsg);
+
+      // Generate response message with success status
       return generateResMessage(
         ServiceNameEnum.USER,
         ServiceNameEnum.FILE,
@@ -99,7 +139,10 @@ export class ProfileMicroserviceService {
         false,
       );
     } catch (e) {
+      // If an error occurs, reject the message in the RabbitMQ channel
       await channel.reject(originalMsg, false);
+
+      // Generate response message with error status
       return generateResMessage(
         ServiceNameEnum.USER,
         ServiceNameEnum.FILE,

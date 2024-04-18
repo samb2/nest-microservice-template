@@ -77,7 +77,7 @@ export class ProfileController {
   updatePassword(
     @Body() updatePasswordDto: UpdatePasswordDto,
     @Req() req: any,
-  ): Promise<string> {
+  ): Promise<UpdatePasswordResDto> {
     return this.profileService.updatePassword(updatePasswordDto, req.user);
   }
 

@@ -6,7 +6,7 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, QueryRunner, Repository } from 'typeorm';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -50,6 +50,7 @@ export class AuthService implements IAuthServiceInterface {
     private readonly userRepository: Repository<User>,
     @InjectRepository(ResetPassword)
     private readonly resetPasswordRep: Repository<ResetPassword>,
+    @InjectDataSource()
     private readonly dataSource: DataSource,
     @Inject('RedisRefresh') private readonly redisRefresh: Redis,
   ) {}

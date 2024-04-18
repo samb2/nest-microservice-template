@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Not, QueryRunner, Repository } from 'typeorm';
 import { Role } from './entities/role.entity';
 import { Permission } from '../permission/entities/permission.entity';
@@ -26,6 +26,7 @@ import { PageMetaDto } from '../utils/dto/page-meta.dto';
 @Injectable()
 export class RoleService {
   constructor(
+    @InjectDataSource()
     private readonly dataSource: DataSource,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
@@ -104,6 +105,7 @@ export class RoleService {
           JSON.stringify(redisPermissions),
         );
       }
+
       // Commit the transaction
       await queryRunner.commitTransaction();
       return role;
