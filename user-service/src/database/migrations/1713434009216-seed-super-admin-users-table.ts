@@ -3,7 +3,9 @@ import { User } from '../../user/entities/user.entity';
 
 const authId: string = '8ff287f8-f26f-49e7-b0ba-c13df26fef5f';
 
-export class SuperAdmin1710749911179 implements MigrationInterface {
+export class SeedSuperAdminUsersTable1713434009216
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Get Repositories
     const userRepository: Repository<User> =

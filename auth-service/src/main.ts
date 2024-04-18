@@ -17,7 +17,7 @@ import {
   winstonLogger,
 } from '@irole/microservices';
 
-// todo redis module - set password for redis
+// todo redis module - set password for redis - updateAt trigger
 async function bootstrap(): Promise<void> {
   const app: INestApplication = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
