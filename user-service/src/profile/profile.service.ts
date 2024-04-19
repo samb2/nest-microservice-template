@@ -31,7 +31,9 @@ export class ProfileService {
       id: user.id,
       email: user.email,
       authId: user.authId,
-      avatar: `${process.env.MINIO_STORAGE_URL}${user.avatar}`,
+      avatar: user.avatar
+        ? `${process.env.MINIO_STORAGE_URL}${user.avatar}`
+        : null,
       firstName: user.firstName,
       lastName: user.lastName,
       createdAt: user.createdAt,
