@@ -7,10 +7,6 @@ import { ResetPassword } from './entities/reset-password.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServiceNameEnum } from '@irole/microservices';
-import {
-  redisCommonFactory,
-  redisRefreshFactory,
-} from '../redis/redis-client.factory';
 import { AuthMicroserviceController } from './microservice/auth-microservice.controller';
 import { AuthMicroserviceService } from './microservice/auth-microservice.service';
 import { TokenModule } from '../token/token.module';
@@ -46,12 +42,7 @@ import { TokenModule } from '../token/token.module';
     ]),
   ],
   controllers: [AuthController, AuthMicroserviceController],
-  providers: [
-    AuthService,
-    AuthMicroserviceService,
-    redisRefreshFactory,
-    redisCommonFactory,
-  ],
+  providers: [AuthService, AuthMicroserviceService],
   exports: [AuthService],
 })
 export class AuthModule {}

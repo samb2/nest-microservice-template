@@ -13,8 +13,8 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
 import { LoggerMiddleware } from '@irole/microservices';
-import { redisCommonFactory } from './redis/redis-client.factory';
 import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -26,6 +26,7 @@ import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
     }),
     TerminusModule,
     DatabaseModule,
+    RedisModule,
     PassportModule.register({ defaultStrategy: 'jwt-access' }),
     JwtModule.register({}),
     ThrottlerModule.forRootAsync({
@@ -43,7 +44,6 @@ import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
   ],
   controllers: [HealthController],
   providers: [
-    redisCommonFactory,
     RedisHealthIndicator,
     {
       provide: APP_GUARD,

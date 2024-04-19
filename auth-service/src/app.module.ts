@@ -11,15 +11,12 @@ import { TerminusModule } from '@nestjs/terminus';
 import { LoggerMiddleware } from '@irole/microservices';
 import { RoleModule } from './role/role.module';
 import { PermissionModule } from './permission/permission.module';
-import {
-  redisCommonFactory,
-  redisRefreshFactory,
-} from './redis/redis-client.factory';
 import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
 import { TokenModule } from './token/token.module';
 import { PassportModule } from '@nestjs/passport';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
-import { RefreshTokenStrategy } from "./utils/passport/refreshToken.strategy";
+import { RefreshTokenStrategy } from './utils/passport/refreshToken.strategy';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -31,6 +28,7 @@ import { RefreshTokenStrategy } from "./utils/passport/refreshToken.strategy";
     }),
     TerminusModule,
     DatabaseModule,
+    RedisModule,
     PassportModule.register({ defaultStrategy: 'jwt-access' }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
@@ -49,8 +47,6 @@ import { RefreshTokenStrategy } from "./utils/passport/refreshToken.strategy";
   ],
   controllers: [HealthController],
   providers: [
-    redisCommonFactory,
-    redisRefreshFactory,
     RedisHealthIndicator,
     {
       provide: APP_GUARD,

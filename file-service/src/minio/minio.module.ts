@@ -4,7 +4,6 @@ import { MinioController } from './minio.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Bucket, BucketSchema } from './schemas/bucket.schema';
 import { BucketRepository } from './bucket.repository';
-import { redisCommonFactory } from '../redis/redis-client.factory';
 import { BucketEnum } from './bucket.enum';
 import { ConfigService } from '@nestjs/config';
 
@@ -13,7 +12,7 @@ import { ConfigService } from '@nestjs/config';
     MongooseModule.forFeature([{ name: Bucket.name, schema: BucketSchema }]),
   ],
   controllers: [MinioController],
-  providers: [MinioService, BucketRepository, redisCommonFactory],
+  providers: [MinioService, BucketRepository],
   exports: [MinioService, BucketRepository],
 })
 export class MinioModule implements OnModuleInit {

@@ -3,7 +3,6 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { redisCommonFactory } from '../redis/redis-client.factory';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ServiceNameEnum } from '@irole/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -40,7 +39,7 @@ import { UserMicroserviceController } from './microservice/user-microservice.con
     ]),
   ],
   controllers: [UserController, UserMicroserviceController],
-  providers: [UserService, UserMicroserviceService, redisCommonFactory],
+  providers: [UserService, UserMicroserviceService],
   exports: [UserService],
 })
 export class UserModule {}

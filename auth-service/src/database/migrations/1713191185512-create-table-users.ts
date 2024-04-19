@@ -1,5 +1,4 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import * as process from 'process';
 
 export class CreateTableUsers1713191185512 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
