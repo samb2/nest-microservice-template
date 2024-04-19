@@ -18,6 +18,7 @@ import { BucketEnum } from '../../minio/bucket.enum';
 export class FileMicroserviceService {
   constructor(
     @Inject(ServiceNameEnum.USER) private readonly userClient: ClientProxy,
+    @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
     @Inject(MinioService) private readonly minioService: MinioService,
     private readonly fileRepo: FileRepository,
   ) {
@@ -62,11 +63,24 @@ export class FileMicroserviceService {
     payload: any,
   ): Promise<MicroResInterface> {
     const message: MicroSendInterface = generateMessage(
-      ServiceNameEnum.USER,
       ServiceNameEnum.FILE,
+      ServiceNameEnum.USER,
       payload,
     );
 
     return sendMicroMessage(this.userClient, pattern, message);
+  }
+
+  async sendToAuthService(
+    pattern: PatternEnum,
+    payload: any,
+  ): Promise<MicroResInterface> {
+    const message: MicroSendInterface = generateMessage(
+      ServiceNameEnum.FILE,
+      ServiceNameEnum.AUTH,
+      payload,
+    );
+
+    return sendMicroMessage(this.authClient, pattern, message);
   }
 }

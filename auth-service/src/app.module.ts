@@ -17,6 +17,9 @@ import {
 } from './redis/redis-client.factory';
 import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
 import { TokenModule } from './token/token.module';
+import { PassportModule } from '@nestjs/passport';
+import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
+import { RefreshTokenStrategy } from "./utils/passport/refreshToken.strategy";
 
 @Module({
   imports: [
@@ -28,6 +31,7 @@ import { TokenModule } from './token/token.module';
     }),
     TerminusModule,
     DatabaseModule,
+    PassportModule.register({ defaultStrategy: 'jwt-access' }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -52,6 +56,8 @@ import { TokenModule } from './token/token.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
   ],
 })
 export class AppModule implements NestModule {

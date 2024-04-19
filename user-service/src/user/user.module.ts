@@ -3,9 +3,6 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
-import { AccessTokenStrategy } from '../utils/passport/accessToken.strategy';
 import { redisCommonFactory } from '../redis/redis-client.factory';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ServiceNameEnum } from '@irole/microservices';
@@ -16,8 +13,6 @@ import { UserMicroserviceController } from './microservice/user-microservice.con
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    PassportModule.register({ defaultStrategy: 'jwt-access' }),
-    JwtModule.register({}),
     ClientsModule.registerAsync([
       {
         name: ServiceNameEnum.AUTH,
@@ -45,11 +40,7 @@ import { UserMicroserviceController } from './microservice/user-microservice.con
     ]),
   ],
   controllers: [UserController, UserMicroserviceController],
-  providers: [
-    UserService,
-    UserMicroserviceService,
-    AccessTokenStrategy,
-    redisCommonFactory,
-  ],
+  providers: [UserService, UserMicroserviceService, redisCommonFactory],
+  exports: [UserService],
 })
 export class UserModule {}

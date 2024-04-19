@@ -1,3 +1,5 @@
+name: nest-microservice-template-core
+
 services:
   postgres:
     image: postgres

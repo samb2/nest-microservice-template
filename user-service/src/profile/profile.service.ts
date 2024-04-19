@@ -14,6 +14,7 @@ import { UpdateProfileResDto } from './dto/response/update-profile-res.dto';
 import { DeleteAvatarResDto } from './dto/response/delete-avatar-res.dto';
 import { UpdatePasswordResDto } from './dto/response/update-password-res.dto';
 import { createTransaction } from '../utils/create-transaction.util';
+import * as process from 'node:process';
 
 @Injectable()
 export class ProfileService {
@@ -26,7 +27,15 @@ export class ProfileService {
   ) {}
 
   async findOne(user: User): Promise<User> {
-    return user;
+    return {
+      id: user.id,
+      email: user.email,
+      authId: user.authId,
+      avatar: `${process.env.MINIO_STORAGE_URL}${user.avatar}`,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      createdAt: user.createdAt,
+    } as User;
   }
 
   async update(

@@ -2,12 +2,9 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PassportModule } from '@nestjs/passport';
 import { User } from './entities/user.entity';
 import { ResetPassword } from './entities/reset-password.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { AccessTokenStrategy } from '../utils/passport/accessToken.strategy';
-import { RefreshTokenStrategy } from '../utils/passport/refreshToken.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServiceNameEnum } from '@irole/microservices';
 import {
@@ -21,7 +18,6 @@ import { TokenModule } from '../token/token.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, ResetPassword]),
-    PassportModule.register({ defaultStrategy: 'jwt-access' }),
     TokenModule,
     ClientsModule.registerAsync([
       {
@@ -53,10 +49,9 @@ import { TokenModule } from '../token/token.module';
   providers: [
     AuthService,
     AuthMicroserviceService,
-    AccessTokenStrategy,
-    RefreshTokenStrategy,
     redisRefreshFactory,
     redisCommonFactory,
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -1,7 +1,10 @@
 import {
   Document,
   FilterQuery,
+  InsertManyOptions,
   Model,
+  MongooseBaseQueryOptions,
+  MongooseUpdateQueryOptions,
   ProjectionType,
   QueryOptions,
   Types,
@@ -43,13 +46,13 @@ export interface IRepository<T extends Document> {
   update(
     where?: FilterQuery<T>,
     update?: UpdateQuery<T> | UpdateWithAggregationPipeline,
-    options?: QueryOptions<T> | null,
+    options?: MongooseUpdateQueryOptions<T> | null,
   ): Promise<T>;
 
   updateMany(
     where?: FilterQuery<T>,
     update?: UpdateQuery<T> | UpdateWithAggregationPipeline,
-    options?: QueryOptions<T> | null,
+    options?: MongooseUpdateQueryOptions<T> | null,
   ): Promise<T>;
 
   findByIdAndUpdate(
@@ -64,7 +67,10 @@ export interface IRepository<T extends Document> {
     options?: QueryOptions<T> | null,
   ): Promise<Model<T>>;
 
-  deleteMany(where?: FilterQuery<T>, options?: QueryOptions<T>): Promise<any>;
+  deleteMany(
+    where?: FilterQuery<T>,
+    options?: MongooseBaseQueryOptions<T>,
+  ): Promise<any>;
 
   findByIdAndDelete(
     id: Types.ObjectId,
@@ -80,7 +86,10 @@ export interface IRepository<T extends Document> {
 
   insert(value: Partial<T>): Promise<any>;
 
-  insertMany(values: Partial<T>[], options: any): Promise<any>;
+  insertMany(
+    values: Partial<T>[],
+    options: InsertManyOptions & { lean: true },
+  ): Promise<any>;
 
   insertWithoutSave(value: Partial<T>): Promise<T>;
 }

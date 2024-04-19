@@ -2,16 +2,12 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientProxy } from '@nestjs/microservices';
 import {
-  generateMessage,
   JwtAccessPayload,
   MicroResInterface,
-  MicroSendInterface,
   PatternEnum,
-  sendMicroMessage,
-  ServiceNameEnum,
 } from '@irole/microservices';
+import { FileMicroserviceService } from '../../file/microservice/file-microservice.service';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(
@@ -20,7 +16,8 @@ export class AccessTokenStrategy extends PassportStrategy(
 ) {
   constructor(
     private configService: ConfigService,
-    @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
+    @Inject(FileMicroserviceService)
+    private readonly fileMicroserviceService: FileMicroserviceService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -31,19 +28,16 @@ export class AccessTokenStrategy extends PassportStrategy(
   }
 
   async validate(req: any, payload: JwtAccessPayload): Promise<any> {
-    const message: MicroSendInterface = generateMessage(
-      ServiceNameEnum.FILE,
-      ServiceNameEnum.AUTH,
-      {
-        authId: payload.authId,
-      },
-    );
-    // todo add enum for pattern
-    const result: MicroResInterface = await sendMicroMessage(
-      this.authClient,
-      PatternEnum.AUTH_VERIFY_TOKEN,
-      message,
-    );
+    const microPayload = {
+      authId: payload.authId,
+    };
+
+    const result: MicroResInterface =
+      await this.fileMicroserviceService.sendToAuthService(
+        PatternEnum.AUTH_VERIFY_TOKEN,
+        microPayload,
+      );
+
     if (result.error) {
       throw new UnauthorizedException(result.reason.message);
     }

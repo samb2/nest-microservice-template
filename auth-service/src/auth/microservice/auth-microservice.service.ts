@@ -51,6 +51,7 @@ export class AuthMicroserviceService {
       where: { id, isDelete: false, isActive: true },
       select: {
         id: true,
+        superAdmin: true,
         isActive: true,
         email: true,
         isDelete: true,

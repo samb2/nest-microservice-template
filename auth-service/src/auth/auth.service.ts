@@ -44,7 +44,7 @@ import { JwtForgotPayload } from './interfaces/Jwt-forgot-payload';
 export class AuthService implements IAuthServiceInterface {
   constructor(
     private readonly authMicroserviceService: AuthMicroserviceService,
-    @Inject(TokenService) private readonly tokenService: TokenService,
+    private readonly tokenService: TokenService,
     private readonly configService: ConfigService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,

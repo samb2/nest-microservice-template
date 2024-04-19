@@ -14,7 +14,7 @@ import { ConfigService } from '@nestjs/config';
   ],
   controllers: [MinioController],
   providers: [MinioService, BucketRepository, redisCommonFactory],
-  exports: [MinioService],
+  exports: [MinioService, BucketRepository],
 })
 export class MinioModule implements OnModuleInit {
   constructor(
