@@ -136,9 +136,7 @@ export default class Repository<T extends Document> implements IRepository<T> {
 
   async findByIdAndDelete(
     id: Types.ObjectId,
-    options?: QueryOptions<T> & {
-      includeResultMetadata: true;
-    },
+    options?: QueryOptions<T>,
   ): Promise<any> {
     return this.model.findByIdAndDelete(id, options);
   }

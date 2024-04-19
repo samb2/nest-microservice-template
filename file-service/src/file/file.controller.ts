@@ -69,7 +69,6 @@ export class FileController {
     return this.fileService.uploadAvatar(file, req.user);
   }
 
-  // todo page meta add
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_FILE)
   @Get()

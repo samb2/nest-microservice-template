@@ -16,41 +16,50 @@ import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { FileMicroserviceService } from './microservice/file-microservice.service';
 import { DeleteFileResDto } from './dto/response/delete-file-res.dto';
 import { GetFileQueryDto } from './dto/get-file-query.dto';
+import { InjectConnection } from '@nestjs/mongoose';
+import { ClientSession, Connection } from 'mongoose';
 
 @Injectable()
 export class FileService {
   constructor(
+    @InjectConnection() private readonly connection: Connection,
     @Inject(MinioService) private readonly minioService: MinioService,
     private readonly fileRepo: FileRepository,
     private readonly bucketRepo: BucketRepository,
     private readonly fileMicroserviceService: FileMicroserviceService,
   ) {}
 
-  //todo add transaction for mongo
   async uploadAvatar(image: any, user: any): Promise<File> {
+    // Generate metadata for the file
     const metaData: object = {
       'content-type': image.mimetype,
     };
+
+    // Extract file extension and generate filename
     const extension: string = path.parse(image.originalname).ext;
     const filename: string = `${uuidV4()}`;
     const bucketKey: string = `${filename}${extension}`;
 
-    const bucket: Bucket = await this.bucketRepo.findOne({
-      name: BucketEnum.AVATAR,
-    });
-    if (!bucket) {
-      throw new Error(`Bucket ${BucketEnum.AVATAR} not found`);
-    }
+    // Start a database transaction
+    const session: ClientSession = await this.connection.startSession();
+    session.startTransaction();
+
     try {
-      // Save to Minio
-      await this.minioService.insertFile(
-        bucket.name,
-        bucketKey,
-        image.buffer,
-        metaData,
+      // Find the bucket for avatar files
+      const bucket: Bucket = await this.bucketRepo.findOne(
+        {
+          name: BucketEnum.AVATAR,
+        },
+        { id: true, name: true },
+        { session },
       );
-      // Save to File
-      const file: File = await this.fileRepo.insert({
+      // If bucket is not found, throw an error
+      if (!bucket) {
+        throw new NotFoundException(`Bucket ${BucketEnum.AVATAR} not found`);
+      }
+
+      // Save file metadata to the database
+      const file: File = await this.fileRepo.insertWithoutSave({
         name: image.originalname,
         bucket: bucket.id,
         key: bucketKey,
@@ -59,7 +68,9 @@ export class FileService {
         uploadedBy: user.id,
         path: `${bucket.name}/${bucketKey}`,
       });
-      // send to user service
+      await file.save({ session });
+
+      // Send message to user service about avatar upload
       const payload = {
         authId: user.id,
         avatar: `${bucket.name}/${bucketKey}`,
@@ -70,29 +81,56 @@ export class FileService {
           payload,
         );
 
+      // If there's an error response, throw an InternalServerErrorException
+      if (result.error) {
+        throw new InternalServerErrorException(result.reason.message);
+      }
+
+      // Save file to Minio storage
+      await this.minioService.insertFile(
+        bucket.name,
+        bucketKey,
+        image.buffer,
+        metaData,
+      );
+
+      // If there's a request to delete the old avatar, remove it from Minio and delete its metadata from the database
       if (result.data.delete) {
         await this.minioService.removeObject(
           BucketEnum.AVATAR,
           result.data.avatar,
         );
-        await this.fileRepo.findOneAndDelete({ key: result.data.avatar });
+        await this.fileRepo.findOneAndDelete(
+          { key: result.data.avatar },
+          { session },
+        );
       }
-      if (result.error) {
-        throw new InternalServerErrorException(result.reason.message);
-      }
+
+      // Commit the transaction
+      await session.commitTransaction();
+
+      // Return the uploaded file entity
       return file;
     } catch (e) {
-      throw new InternalServerErrorException(e);
+      // If an error occurs, abort the transaction and throw the error
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      // End the session
+      await session.endSession();
     }
   }
 
   async findAll(getFileDto: GetFileQueryDto): Promise<File[]> {
+    // Destructure query parameters
     const { sortField, take, page } = getFileDto;
 
+    // Prepare sort object based on sortField and sort direction
     const sort = sortField
       ? { [sortField]: getFileDto.sort === 'ASC' ? 1 : -1 }
       : undefined;
 
+    // Use paginate method from the repository to fetch paginated files
     return await this.fileRepo.paginate(
       {},
       {
@@ -112,11 +150,21 @@ export class FileService {
   }
 
   async remove(id: any): Promise<DeleteFileResDto> {
+    // Start a database transaction
+    const session: ClientSession = await this.connection.startSession();
+    session.startTransaction();
+
     try {
+      // Find the file by ID
       const file: File = await this._findById(id);
+
+      // Get the bucket name associated with the file
       const bucketName = file.bucket['name'];
-      await this.minioService.removeObject(bucketName, file.key);
-      await this.fileRepo.findByIdAndDelete(id);
+
+      // Delete the file from the repository
+      await this.fileRepo.findByIdAndDelete(id, { session });
+
+      // If the file was from the avatar bucket, send a message to the user service
       if (bucketName === BucketEnum.AVATAR) {
         // send to user service
         const payload = {
@@ -132,9 +180,22 @@ export class FileService {
           throw new InternalServerErrorException(result.reason.message);
         }
       }
+
+      // Remove the file from Minio storage
+      await this.minioService.removeObject(bucketName, file.key);
+
+      // Commit the transaction
+      await session.commitTransaction();
+
+      // Return success message
       return { message: `This action removes a #${id} file` };
     } catch (e) {
-      throw new InternalServerErrorException(e);
+      // If an error occurs, abort the transaction and throw the error
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      // End the session
+      await session.endSession();
     }
   }
 

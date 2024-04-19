@@ -25,18 +25,29 @@ export class FileMicroserviceService {
     this.userClient.connect().then();
   }
 
-  async deleteAvatar(deleteAvatarDto: DeleteAvatarDto, context: RmqContext) {
+  async deleteAvatar(
+    deleteAvatarDto: DeleteAvatarDto,
+    context: RmqContext,
+  ): Promise<MicroResInterface> {
+    // Get the channel and original message from the RabbitMQ context
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
     try {
+      // Remove the avatar file from Minio storage
       await this.minioService.removeObject(
         BucketEnum.AVATAR,
         deleteAvatarDto.data.avatar,
       );
+
+      // Find and delete the avatar file metadata from the database
       await this.fileRepo.findOneAndDelete({
         key: deleteAvatarDto.data.avatar,
       });
+
+      // Acknowledge the message in the RabbitMQ channel
       channel.ack(originalMsg);
+
+      // Return success response message
       return generateResMessage(
         ServiceNameEnum.FILE,
         ServiceNameEnum.USER,
@@ -44,7 +55,10 @@ export class FileMicroserviceService {
         false,
       );
     } catch (e) {
+      // If an error occurs, reject the message in the RabbitMQ channel
       await channel.reject(originalMsg, false);
+
+      // Return error response message
       return generateResMessage(
         ServiceNameEnum.FILE,
         ServiceNameEnum.USER,

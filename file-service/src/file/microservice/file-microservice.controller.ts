@@ -15,7 +15,7 @@ export class FileMicroserviceController {
     private readonly fileMicroserviceService: FileMicroserviceService,
   ) {}
 
-  @MessagePattern(PatternEnum.USER_AVATAR_DELETED)
+  @MessagePattern(PatternEnum.FILE_AVATAR_DELETED)
   microDeleteAvatar(
     @Payload() deleteAvatarDto: DeleteAvatarDto,
     @Ctx() context: RmqContext,

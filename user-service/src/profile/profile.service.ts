@@ -114,7 +114,7 @@ export class ProfileService {
       // Send a request to the file service to delete the avatar file
       const result: MicroResInterface =
         await this.profileMicroserviceService.sendToFileService(
-          PatternEnum.USER_AVATAR_DELETED,
+          PatternEnum.FILE_AVATAR_DELETED,
           payload,
         );
 

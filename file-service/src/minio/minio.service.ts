@@ -6,18 +6,18 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MinioService {
-  public minioService;
+  public minioService: Client;
 
   constructor(
     private readonly bucketRepo: BucketRepository,
     private readonly configService: ConfigService,
   ) {
     this.minioService = new Client({
-      endPoint: configService.get('minio.endPoint'),
-      port: parseInt(configService.get('minio.port')),
-      useSSL: configService.get<boolean>('minio.useSSL'),
-      accessKey: configService.get('minio.accessKey'),
-      secretKey: configService.get('minio.secretKey'),
+      endPoint: this.configService.get('minio.endPoint'),
+      port: parseInt(this.configService.get('minio.port')),
+      useSSL: this.configService.get<boolean>('minio.useSSL'),
+      accessKey: this.configService.get('minio.accessKey'),
+      secretKey: this.configService.get('minio.secretKey'),
     });
   }
 
