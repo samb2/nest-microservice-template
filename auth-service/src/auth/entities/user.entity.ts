@@ -4,6 +4,7 @@ import {
   Column,
   OneToMany,
   BeforeInsert,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { ResetPassword } from './reset-password.entity';
@@ -43,6 +44,13 @@ export class User {
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 
   @OneToMany(() => ResetPassword, (resetPassword) => resetPassword.user)
   resetPassword: ResetPassword[];

@@ -10,6 +10,5 @@ export class UpdateUserPasswordDto {
 class PayloadInfo {
   oldPassword: string;
   newPassword: string;
-  reNewPassword: string;
   authId: string;
 }

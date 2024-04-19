@@ -4,6 +4,7 @@ import {
   OneToMany,
   PrimaryColumn,
   BeforeInsert,
+  UpdateDateColumn,
 } from 'typeorm';
 import { RolePermission } from './role-permission.entity';
 import { UsersRoles } from '../../auth/entities/users-roles.entity';
@@ -26,7 +27,7 @@ export class Role {
   })
   createdAt: Date;
 
-  @Column({
+  @UpdateDateColumn({
     name: 'updated_at',
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
