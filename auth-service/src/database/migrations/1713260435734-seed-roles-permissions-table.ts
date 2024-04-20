@@ -111,7 +111,6 @@ export class SeedRolesPermissionsTable1713260435734
     }
   }
 
-  //todo transaction
   public async down(queryRunner: QueryRunner): Promise<void> {
     const rolePermissionRep: Repository<RolePermission> =
       queryRunner.manager.getRepository(RolePermission);

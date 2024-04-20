@@ -307,7 +307,6 @@ export class RoleService {
     }
   }
 
-  // Todo set query for isActive & isDelete
   async getUserRoles(userId: string): Promise<User> {
     // Find the user by their ID along with their roles
     const user: User = await this.userRepository.findOne({

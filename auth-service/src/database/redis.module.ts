@@ -10,9 +10,10 @@ dotenv.config({
 export const redisCommon: FactoryProvider<Redis> = {
   provide: 'RedisCommon',
   useFactory: () => {
-    const redisInstance = new Redis({
+    const redisInstance: Redis = new Redis({
       host: process.env.REDIS_HOST_COMMON,
       port: Number(process.env.REDIS_PORT_COMMON),
+      password: process.env.REDIS_PASSWORD_COMMON,
     });
 
     redisInstance.on('error', (e) => {

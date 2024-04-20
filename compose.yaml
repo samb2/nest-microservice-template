@@ -124,6 +124,8 @@ services:
   redis-auth:
     image: redis/redis-stack:latest
     restart: always
+    environment:
+      REDIS_ARGS: "--requirepass ${REDIS_AUTH_PASS}"
     container_name: redis-auth
     ports:
       - "6379:6379"
@@ -137,6 +139,8 @@ services:
     image: redis/redis-stack:latest
     restart: always
     container_name: redis-common
+    environment:
+      REDIS_ARGS: "--requirepass ${REDIS_COMMON_PASS}"
     ports:
       - "6380:6379"
       - "8002:8001"
