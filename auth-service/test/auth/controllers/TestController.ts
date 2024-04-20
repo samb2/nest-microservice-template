@@ -6,11 +6,9 @@ import { Response } from 'supertest';
 import { Repository } from 'typeorm';
 import * as jwt from 'jsonwebtoken';
 import { AppModule } from '../../../src/app.module';
-import { ResponseInterceptor } from '../../../src/common/interceptors/response.interceptor';
-import { HttpExceptionFilter } from '../../../src/common/exceptions/httpExceptionFilter.exception';
-import { User } from '../../../src/auth/entities/user.entity';
-import { ResetPassword } from '../../../src/auth/entities/reset-password.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { HttpExceptionFilter, ResponseInterceptor } from '@irole/microservices';
+import { ResetPassword, User } from '../../../src/auth/entities';
 
 export class TestController {
   static app: INestApplication | undefined;

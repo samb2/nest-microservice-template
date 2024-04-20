@@ -1,4 +1,4 @@
-import { RegisterDto } from '../../src/auth/dto/register.dto';
+import { RegisterDto } from '../../src/auth/dto';
 
 export const validUser: RegisterDto = {
   email: 'testUser1@test.com',
