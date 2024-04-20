@@ -7,11 +7,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Bucket } from './schemas/bucket.schema';
-import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
-import { PermissionGuard } from '../utils/guard/permission.guard';
 import { PermissionEnum, Permissions } from '@irole/microservices';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
-import { GetBucketResDto } from './dto/response/get-bucket-res.dto';
+import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
+import { GetBucketResDto } from './dto';
 
 @ApiTags('minio')
 @Controller('minio')

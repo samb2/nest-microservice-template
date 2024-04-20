@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Repository } from 'typeorm';
-import { Role } from '../../role/entities/role.entity';
 import { RoleEnum } from '../../role/enum/role.enum';
+import { Role } from '../../role/entities';
 
 export class SeedRolesTable1713259925884 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

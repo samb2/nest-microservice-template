@@ -1,9 +1,8 @@
 import { MigrationInterface, QueryRunner, Repository } from 'typeorm';
-import { UsersRoles } from '../../auth/entities/users-roles.entity';
-import { Role } from '../../role/entities/role.entity';
-import { User } from '../../auth/entities/user.entity';
 import { bcryptPassword } from '../../utils/password.util';
 import { RoleEnum } from '../../role/enum/role.enum';
+import { User, UsersRoles } from '../../auth/entities';
+import { Role } from '../../role/entities';
 
 export class SeedSuperAdminUsersTable1713274875022
   implements MigrationInterface

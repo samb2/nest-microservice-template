@@ -5,15 +5,17 @@ import {
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { FindUsersQueryDto } from './dto/find-users-query.dto';
-import { UpdateUserResDto } from './dto/response/update-user-res.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserMicroserviceService } from './microservice/user-microservice.service';
-import { GetUserResDto } from './dto/response/get-user-res.dto';
-import { GetAllUsersResDto } from './dto/response/get-all-users-res.dto';
 import { PageMetaDto } from '../utils/dto/page-meta.dto';
+import {
+  FindUsersQueryDto,
+  GetAllUsersResDto,
+  GetUserResDto,
+  UpdateUserDto,
+  UpdateUserResDto,
+} from './dto';
 
 @Injectable()
 export class UserService {

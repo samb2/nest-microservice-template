@@ -5,23 +5,23 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Not, QueryRunner, Repository } from 'typeorm';
-import { Role } from './entities/role.entity';
 import { Permission } from '../permission/entities/permission.entity';
-import { RolePermission } from './entities/role-permission.entity';
 import { createTransaction } from '../utils/create-transaction.util';
 import Redis from 'ioredis';
 import { PermissionEnum } from '@irole/microservices';
-import { User } from '../auth/entities/user.entity';
-import { UsersRoles } from '../auth/entities/users-roles.entity';
-import { GetRoleQueryDto } from './dto/get-role-query.dto';
-import { DeleteRoleResDto } from './dto/response/delete-role-res.dto';
-import { DeleteRoleUserResDto } from './dto/response/delete-role-user-res.dto';
-import { GetAllRoleResDto } from './dto/response/get-all-role-res.dto';
 import { PageMetaDto } from '../utils/dto/page-meta.dto';
+import { Role, RolePermission } from './entities';
+import { User, UsersRoles } from '../auth/entities';
+import {
+  CreateRoleDto,
+  DeleteRoleResDto,
+  DeleteRoleUserResDto,
+  GetAllRoleResDto,
+  GetRoleQueryDto,
+  UpdateRoleDto,
+} from './dto';
 
 @Injectable()
 export class RoleService {
@@ -30,10 +30,6 @@ export class RoleService {
     private readonly dataSource: DataSource,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
-    @InjectRepository(Permission)
-    private readonly permissionRepository: Repository<Permission>,
-    @InjectRepository(RolePermission)
-    private readonly rolePermissionRepository: Repository<RolePermission>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(UsersRoles)

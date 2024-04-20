@@ -6,9 +6,8 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { AuthMicroserviceService } from './auth-microservice.service';
+import { UpdateUserDto, UpdateUserPasswordDto } from './dto';
 
 @Controller()
 export class AuthMicroserviceController {

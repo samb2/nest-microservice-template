@@ -12,10 +12,9 @@ import {
   sendMicroMessageWithTimeOut,
   ServiceNameEnum,
 } from '@irole/microservices';
-import { User } from '../entities/user.entity';
 import { bcryptPassword, comparePassword } from '../../utils/password.util';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
+import { User } from '../entities';
+import { UpdateUserDto, UpdateUserPasswordDto } from './dto';
 
 @Injectable()
 export class AuthMicroserviceService {

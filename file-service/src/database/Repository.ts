@@ -11,9 +11,7 @@ import {
   UpdateWithAggregationPipeline,
   MongooseUpdateQueryOptions,
 } from 'mongoose';
-import { ICache } from './interfaces/cache.interface';
-import { PaginationOptions } from './interfaces/pagination.interface';
-import { IRepository } from './interfaces/repository.interface';
+import { ICache, IRepository, PaginationOptions } from './interfaces';
 
 export default class Repository<T extends Document> implements IRepository<T> {
   constructor(private readonly model: Model<T>) {}

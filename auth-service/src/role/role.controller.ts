@@ -12,8 +12,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -26,21 +24,23 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
-import { PermissionGuard } from '../utils/guard/permission.guard';
 import { PermissionEnum, Permissions } from '@irole/microservices';
-import { Role } from './entities/role.entity';
-import { User } from '../auth/entities/user.entity';
-import { UsersRoles } from '../auth/entities/users-roles.entity';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
-import { CreateRoleResDto } from './dto/response/create-role-res.dto';
-import { GetRoleQueryDto } from './dto/get-role-query.dto';
-import { GetRoleResDto } from './dto/response/get-role-res.dto';
-import { GetAllRoleResDto } from './dto/response/get-all-role-res.dto';
-import { DeleteRoleResDto } from './dto/response/delete-role-res.dto';
-import { RoleUserResDto } from './dto/response/get-role-user-res.dto';
-import { AssignRoleResDto } from './dto/response/assign-role-res.dto';
-import { DeleteRoleUserResDto } from './dto/response/delete-role-user-res.dto';
+import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
+import {
+  AssignRoleResDto,
+  CreateRoleDto,
+  CreateRoleResDto,
+  DeleteRoleResDto,
+  DeleteRoleUserResDto,
+  GetAllRoleResDto,
+  GetRoleQueryDto,
+  GetRoleResDto,
+  RoleUserResDto,
+  UpdateRoleDto,
+} from './dto';
+import { Role } from './entities';
+import { User, UsersRoles } from '../auth/entities';
 
 @ApiTags('roles')
 @ApiBearerAuth()

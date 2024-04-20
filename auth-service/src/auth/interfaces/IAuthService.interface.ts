@@ -1,13 +1,15 @@
-import { User } from '../entities/user.entity';
-import { RefreshResDto } from '../dto/response/refresh-res.dto';
-import { RegisterDto } from '../dto/register.dto';
-import { RegisterResDto } from '../dto/response/register-res.dto';
-import { LoginResDto } from '../dto/response/login-res.dto';
-import { LoginDto } from '../dto/login.dto';
-import { ForgotPasswordDto } from '../dto/forgot-password.dto';
-import { ForgotPasswordResDto } from '../dto/response/forgot-password-res.dto';
-import { ResetPasswordDto } from '../dto/reset-password.dto';
-import { ResetPasswordResDto } from '../dto/response/reset-password-res.dto';
+import {
+  ForgotPasswordDto,
+  ForgotPasswordResDto,
+  LoginDto,
+  LoginResDto,
+  RefreshResDto,
+  RegisterDto,
+  RegisterResDto,
+  ResetPasswordDto,
+  ResetPasswordResDto,
+} from '../dto';
+import { User } from '../entities';
 
 export interface IAuthServiceInterface {
   register(registerDto: RegisterDto): Promise<RegisterResDto>;

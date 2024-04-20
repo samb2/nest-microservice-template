@@ -11,13 +11,12 @@ import { FileRepository } from './file.repository';
 import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket } from '../minio/schemas/bucket.schema';
 import { File } from './schemas/file.schema';
-import { BucketEnum } from '../minio/bucket.enum';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { FileMicroserviceService } from './microservice/file-microservice.service';
-import { DeleteFileResDto } from './dto/response/delete-file-res.dto';
-import { GetFileQueryDto } from './dto/get-file-query.dto';
 import { InjectConnection } from '@nestjs/mongoose';
 import { ClientSession, Connection } from 'mongoose';
+import { BucketEnum } from '../minio/enum/bucket.enum';
+import { DeleteFileResDto, GetFileQueryDto } from './dto';
 
 @Injectable()
 export class FileService {

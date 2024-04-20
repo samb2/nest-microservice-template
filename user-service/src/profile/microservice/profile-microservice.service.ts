@@ -9,11 +9,10 @@ import {
   sendMicroMessage,
   ServiceNameEnum,
 } from '@irole/microservices';
-import { DeleteAvatarDto } from './dto/delete-avatar.dto';
-import { UpdateAvatarDto } from './dto/update-avatar.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
+import { DeleteAvatarDto, UpdateAvatarDto } from './dto';
 
 @Injectable()
 export class ProfileMicroserviceService {

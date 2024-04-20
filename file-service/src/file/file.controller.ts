@@ -24,7 +24,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { UploadFileDto } from './dto/upload-file.dto';
 import { ImageFilterInterceptor } from './interceptors/image-filter.interceptor';
 import { File } from './schemas/file.schema';
 import {
@@ -32,12 +31,14 @@ import {
   PermissionEnum,
   Permissions,
 } from '@irole/microservices';
-import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
-import { PermissionGuard } from '../utils/guard/permission.guard';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
-import { UploadFileResDto } from './dto/response/upload-file-res.dto';
-import { DeleteFileResDto } from './dto/response/delete-file-res.dto';
-import { GetFileQueryDto } from './dto/get-file-query.dto';
+import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
+import {
+  DeleteFileResDto,
+  GetFileQueryDto,
+  UploadFileDto,
+  UploadFileResDto,
+} from './dto';
 
 @ApiTags('files')
 @Controller('files')

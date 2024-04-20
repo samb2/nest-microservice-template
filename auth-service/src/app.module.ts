@@ -14,9 +14,8 @@ import { PermissionModule } from './permission/permission.module';
 import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
 import { TokenModule } from './token/token.module';
 import { PassportModule } from '@nestjs/passport';
-import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
-import { RefreshTokenStrategy } from './utils/passport/refreshToken.strategy';
 import { RedisModule } from './redis/redis.module';
+import { AccessTokenStrategy, RefreshTokenStrategy } from './utils/passport';
 
 @Module({
   imports: [

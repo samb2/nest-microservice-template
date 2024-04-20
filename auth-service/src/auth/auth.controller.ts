@@ -17,19 +17,20 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { RegisterDto } from './dto/register.dto';
-import { RegisterResDto } from './dto/response/register-res.dto';
-import { LoginDto } from './dto/login.dto';
-import { LoginResDto } from './dto/response/login-res.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ForgotPasswordResDto } from './dto/response/forgot-password-res.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { ResetPasswordResDto } from './dto/response/reset-password-res.dto';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
-import { RefreshResDto } from './dto/response/refresh-res.dto';
-import { RefreshTokenGuard } from '../utils/guard/jwt-refresh.guard';
-import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
-import { LogoutResDto } from './dto/response/logout-res.dto';
+import {
+  ForgotPasswordDto,
+  ForgotPasswordResDto,
+  LoginDto,
+  LoginResDto,
+  LogoutResDto,
+  RefreshResDto,
+  RegisterDto,
+  RegisterResDto,
+  ResetPasswordDto,
+  ResetPasswordResDto,
+} from './dto';
+import { AccessTokenGuard, RefreshTokenGuard } from '../utils/guard';
 
 @ApiTags('auth service')
 @Controller('auth')

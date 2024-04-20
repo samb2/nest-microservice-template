@@ -16,12 +16,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Permission } from './entities/permission.entity';
-import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
-import { PermissionGuard } from '../utils/guard/permission.guard';
 import { PermissionEnum, Permissions } from '@irole/microservices';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
-import { GetPermissionRes } from './dto/response/get-permissions-res.dto';
-import { GetPermissionQueryDto } from './dto/get-permission-query.dto';
+import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
+import { GetPermissionQueryDto, GetPermissionRes } from './dto';
 
 @ApiTags('permissions')
 @ApiBearerAuth()

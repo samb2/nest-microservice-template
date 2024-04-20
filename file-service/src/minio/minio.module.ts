@@ -4,8 +4,8 @@ import { MinioController } from './minio.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Bucket, BucketSchema } from './schemas/bucket.schema';
 import { BucketRepository } from './bucket.repository';
-import { BucketEnum } from './bucket.enum';
 import { ConfigService } from '@nestjs/config';
+import { BucketEnum } from './enum/bucket.enum';
 
 @Module({
   imports: [

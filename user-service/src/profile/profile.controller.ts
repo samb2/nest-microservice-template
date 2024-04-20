@@ -10,10 +10,7 @@ import {
   ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { UpdateProfileDto } from './dto/update-profile.dto';
 import { PermissionEnum, Permissions } from '@irole/microservices';
-import { AccessTokenGuard } from '../utils/guard/jwt-access.guard';
-import { PermissionGuard } from '../utils/guard/permission.guard';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -24,12 +21,16 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { User } from '../user/entities/user.entity';
-import { UpdatePasswordDto } from './dto/update-password.dto';
-import { GetProfileResDto } from './dto/response/get-profile-res.dto';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
-import { UpdateProfileResDto } from './dto/response/update-profile-res.dto';
-import { UpdatePasswordResDto } from './dto/response/update-password-res.dto';
-import { DeleteAvatarResDto } from './dto/response/delete-avatar-res.dto';
+import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
+import {
+  DeleteAvatarResDto,
+  GetProfileResDto,
+  UpdatePasswordDto,
+  UpdatePasswordResDto,
+  UpdateProfileDto,
+  UpdateProfileResDto,
+} from './dto';
 
 @ApiTags('profile')
 @ApiBearerAuth()

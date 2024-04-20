@@ -12,7 +12,7 @@ import {
 import { DeleteAvatarDto } from './dto/delete-avatar.dto';
 import { MinioService } from '../../minio/minio.service';
 import { FileRepository } from '../file.repository';
-import { BucketEnum } from '../../minio/bucket.enum';
+import { BucketEnum } from '../../minio/enum/bucket.enum';
 
 @Injectable()
 export class FileMicroserviceService {

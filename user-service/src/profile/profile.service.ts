@@ -3,18 +3,20 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User } from '../user/entities/user.entity';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
-import { UpdatePasswordDto } from './dto/update-password.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ProfileMicroserviceService } from './microservice/profile-microservice.service';
-import { UpdateProfileResDto } from './dto/response/update-profile-res.dto';
-import { DeleteAvatarResDto } from './dto/response/delete-avatar-res.dto';
-import { UpdatePasswordResDto } from './dto/response/update-password-res.dto';
 import { createTransaction } from '../utils/create-transaction.util';
 import * as process from 'node:process';
+import {
+  DeleteAvatarResDto,
+  UpdatePasswordDto,
+  UpdatePasswordResDto,
+  UpdateProfileDto,
+  UpdateProfileResDto,
+} from './dto';
 
 @Injectable()
 export class ProfileService {

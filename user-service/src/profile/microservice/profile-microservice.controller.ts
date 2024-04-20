@@ -7,8 +7,7 @@ import {
 } from '@nestjs/microservices';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
 import { ProfileMicroserviceService } from './profile-microservice.service';
-import { UpdateAvatarDto } from './dto/update-avatar.dto';
-import { DeleteAvatarDto } from './dto/delete-avatar.dto';
+import { DeleteAvatarDto, UpdateAvatarDto } from './dto';
 
 @Controller()
 export class ProfileMicroserviceController {

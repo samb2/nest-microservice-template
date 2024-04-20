@@ -1,10 +1,9 @@
 import { MigrationInterface, QueryRunner, Repository } from 'typeorm';
-import { RolePermission } from '../../role/entities/role-permission.entity';
 import { RoleEnum } from '../../role/enum/role.enum';
 import { PermissionEnum } from '@irole/microservices';
 import { redisCommon } from '../redis.module';
-import { Role } from '../../role/entities/role.entity';
 import { Permission } from '../../permission/entities/permission.entity';
+import { Role, RolePermission } from '../../role/entities';
 
 export class SeedRolesPermissionsTable1713260435734
   implements MigrationInterface
