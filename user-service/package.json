@@ -23,7 +23,8 @@
     "prisma:pull": "npx prisma db pull",
     "prisma:migrate": "npx prisma migrate deploy",
     "prisma:migrate:dev": "npx prisma migrate dev --name init",
-    "prisma:seed": "npx prisma db seed"
+    "prisma:seed": "npx prisma db seed",
+    "start:migrate:prod": "prisma migrate deploy && npm run start:prod"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

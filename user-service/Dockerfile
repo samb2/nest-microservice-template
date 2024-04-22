@@ -80,4 +80,8 @@ USER node
 # Create a directory for logs in the user's home directory.
 RUN mkdir -p /usr/src/app/logs
 # Run the application.
-CMD npm run start:prod
+#CMD npm run prisma:migrate
+#CMD npm run prisma:seed
+#RUN npm run prisma:migrate
+#CMD npm run start:prod
+CMD [  "npm", "run", "start:migrate:prod" ]

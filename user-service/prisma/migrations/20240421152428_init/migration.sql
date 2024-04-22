@@ -24,3 +24,6 @@ CREATE UNIQUE INDEX "UQ_email" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UQ_id" ON "users"("auth_id");
+
+INSERT INTO "users" ("auth_id", "email", "admin", "super_admin")
+VALUES ('8ff287f8-f26f-49e7-b0ba-c13df26fef5f', 'super@admin.com', true, true);
