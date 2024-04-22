@@ -5,10 +5,10 @@ export class UpdateProfileDto {
   @ApiProperty({ example: 'John', required: false })
   @IsOptional()
   @IsString()
-  firstName: string;
+  first_name: string;
 
   @ApiProperty({ example: 'Due', required: false })
   @IsOptional()
   @IsString()
-  lastName: string;
+  last_name: string;
 }

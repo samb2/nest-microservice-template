@@ -18,7 +18,6 @@ import {
   MicroResInterface,
   PatternEnum,
 } from '@irole/microservices';
-import Redis from 'ioredis';
 import { RoleEnum } from '../role/enum/role.enum';
 import { AuthMicroserviceService } from './microservice/auth-microservice.service';
 import { TokenService } from '../token/token.service';
@@ -38,6 +37,7 @@ import {
 import { IAuthServiceInterface, JwtForgotPayload } from './interfaces';
 import { ResetPassword, User, UsersRoles } from './entities';
 import { Role } from '../role/entities';
+import { RedisAuthService } from '../redis';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
@@ -51,7 +51,8 @@ export class AuthService implements IAuthServiceInterface {
     private readonly resetPasswordRep: Repository<ResetPassword>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
-    @Inject('RedisRefresh') private readonly redisRefresh: Redis,
+    @Inject(RedisAuthService)
+    private readonly redisAuthService: RedisAuthService,
   ) {}
 
   public async register(registerDto: RegisterDto): Promise<RegisterResDto> {
@@ -181,7 +182,7 @@ export class AuthService implements IAuthServiceInterface {
       );
 
       // Save Refresh Token In Cache
-      await this.redisRefresh.set(`REFRESH-${user.id}`, refresh_token);
+      await this.redisAuthService.set(`REFRESH-${user.id}`, refresh_token);
 
       // Return user details and tokens
       return { user, access_token, refresh_token };
@@ -308,7 +309,7 @@ export class AuthService implements IAuthServiceInterface {
   public async logout(user: User): Promise<LogoutResDto> {
     try {
       // Set the refresh token in Redis to an empty string to invalidate it
-      await this.redisRefresh.set(`REFRESH-${user.id}`, '');
+      await this.redisAuthService.set(`REFRESH-${user.id}`, '');
 
       // Return success message
       return { message: 'Logout Successfully' };

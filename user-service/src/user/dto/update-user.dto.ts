@@ -5,20 +5,20 @@ export class UpdateUserDto {
   @ApiProperty({ example: 'John', required: false })
   @IsOptional()
   @IsString()
-  firstName?: string;
+  first_name?: string;
 
   @ApiProperty({ example: 'Due', required: false })
   @IsOptional()
   @IsString()
-  lastName?: string;
+  last_name?: string;
 
   @ApiProperty({ type: Boolean })
   @IsOptional()
-  isActive?: boolean;
+  is_active?: boolean;
 
   @ApiProperty({ type: Boolean, default: false })
   @IsOptional()
-  isDelete?: boolean;
+  is_delete?: boolean;
 
   @ApiProperty({ type: Boolean, default: false })
   @IsOptional()

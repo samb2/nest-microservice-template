@@ -1,12 +1,16 @@
 import { Module, Global } from '@nestjs/common';
-import {
-  redisCommonFactory,
-  redisRefreshFactory,
-} from './redis-client.factory';
+import { redisCommonFactory, redisAuthFactory } from './redis-client.factory';
+import { RedisAuthService } from './redis-auth.service';
+import { RedisCommonService } from './redis-common.service';
 
 @Global()
 @Module({
-  providers: [redisRefreshFactory, redisCommonFactory],
-  exports: [redisRefreshFactory, redisCommonFactory],
+  providers: [
+    redisAuthFactory,
+    redisCommonFactory,
+    RedisAuthService,
+    RedisCommonService,
+  ],
+  exports: [RedisAuthService, RedisCommonService],
 })
 export class RedisModule {}

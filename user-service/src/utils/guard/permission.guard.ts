@@ -6,18 +6,18 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import Redis from 'ioredis';
+import { RedisService } from '../../redis';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    @Inject('RedisCommon') private readonly redisCommon: Redis,
+    @Inject(RedisService) private readonly redisService: RedisService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Retrieve the permission metadata set on the route handler
-    const permission = this.reflector.get<string>(
+    const permission: string = this.reflector.get<string>(
       'permission',
       context.getHandler(),
     );
@@ -30,13 +30,13 @@ export class PermissionGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
 
     // Allow access for super admin
-    if (req.user.superAdmin) {
+    if (req.user.super_admin) {
       return true;
     }
 
     // Retrieve permissions from Redis for each role asynchronously
     const promises: Promise<string>[] = req.roles.map((role) =>
-      this.redisCommon.get(`role-${role.toString()}`),
+      this.redisService.get(`role-${role.toString()}`),
     );
     const redisPermissions: string[] = await Promise.all(promises);
     // Parse Redis permissions and add them to the userPermissions array

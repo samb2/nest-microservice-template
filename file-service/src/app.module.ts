@@ -13,8 +13,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
 import { LoggerMiddleware } from '@irole/microservices';
-import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
-import { RedisModule } from './redis/redis.module';
+import { RedisHealthIndicator, RedisModule } from './redis';
 
 @Module({
   imports: [

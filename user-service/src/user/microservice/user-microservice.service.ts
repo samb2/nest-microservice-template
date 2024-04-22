@@ -11,16 +11,12 @@ import {
   sendMicroMessage,
   PatternEnum,
 } from '@irole/microservices';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { prisma } from '../../prisma';
 
 @Injectable()
 export class UserMicroserviceService {
   constructor(
     @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
   ) {}
 
   async create(
@@ -33,12 +29,14 @@ export class UserMicroserviceService {
       if (!expireCheck(createUserDto.ttl)) {
         throw new RequestTimeoutException('Token Expired');
       }
-      const user: User = this.userRepository.create({
-        email: createUserDto.data.email,
-        authId: createUserDto.data.authId,
+
+      await prisma.users.create({
+        data: {
+          email: createUserDto.data.email,
+          auth_id: createUserDto.data.authId,
+        },
       });
 
-      await this.userRepository.save(user);
       channel.ack(originalMsg);
       return generateResMessage(
         ServiceNameEnum.USER,

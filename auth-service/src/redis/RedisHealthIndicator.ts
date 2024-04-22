@@ -4,17 +4,20 @@ import {
   HealthIndicatorResult,
   HealthCheckError,
 } from '@nestjs/terminus';
-import Redis from 'ioredis';
+import { RedisAuthService } from './redis-auth.service';
 
 @Injectable()
 export class RedisHealthIndicator extends HealthIndicator {
-  constructor(@Inject('RedisRefresh') private readonly redisRefresh: Redis) {
+  constructor(
+    @Inject(RedisAuthService)
+    private readonly redisAuthService: RedisAuthService,
+  ) {
     super();
   }
 
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
-    const isHealthy = !!(await this.redisRefresh.ping());
-    const result = this.getStatus(key, isHealthy, {});
+    const isHealthy: boolean = !!(await this.redisAuthService.ping());
+    const result: HealthIndicatorResult = this.getStatus(key, isHealthy, {});
     if (isHealthy) {
       return result;
     }

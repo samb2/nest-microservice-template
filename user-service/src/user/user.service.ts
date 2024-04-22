@@ -3,10 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from './entities/user.entity';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UserMicroserviceService } from './microservice/user-microservice.service';
 import { PageMetaDto } from '../utils/dto/page-meta.dto';
 import {
@@ -16,12 +13,11 @@ import {
   UpdateUserDto,
   UpdateUserResDto,
 } from './dto';
+import { prisma } from '../prisma';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
     private readonly userMicroserviceService: UserMicroserviceService,
   ) {}
 
@@ -32,37 +28,40 @@ export class UserService {
 
     // Initialize whereConditions object to build the WHERE clause for filtering
     const whereConditions: any = {
-      ...(is_delete !== undefined ? { isDelete: is_delete } : {}),
-      ...(is_active !== undefined ? { isActive: is_active } : {}),
-      ...(admin !== undefined ? { admin: admin } : {}),
+      ...(is_delete !== undefined ? { is_delete: JSON.parse(is_delete) } : {}),
+      ...(is_active !== undefined ? { is_active: JSON.parse(is_active) } : {}),
+      ...(admin !== undefined ? { admin: JSON.parse(admin) } : {}),
     };
 
     // Determine the sorting order and field
-    const orderField: string = sortField || 'createdAt';
-    const orderDirection: string = sort || 'ASC';
+    const orderField: string = sortField || 'created_at';
+    const orderDirection: string = sort || 'asc';
 
     // Retrieve users and total count based on provided criteria
-    const [users, itemCount] = await this.userRepository.findAndCount({
+    const users = await prisma.users.findMany({
       where: whereConditions,
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
-        createdAt: true,
-        authId: true,
+        first_name: true,
+        last_name: true,
+        created_at: true,
+        auth_id: true,
         avatar: true,
         email: true,
-        isActive: true,
-        isDelete: true,
+        is_active: true,
+        is_delete: true,
         admin: true,
       },
       skip,
       take,
-      order: {
+      orderBy: {
         [orderField]: orderDirection,
       },
     });
 
+    const itemCount = await prisma.users.count({
+      where: whereConditions,
+    });
     // Generate pagination metadata
     const pageMeta: PageMetaDto = new PageMetaDto({
       metaData: findUsersDto,
@@ -74,21 +73,21 @@ export class UserService {
 
   async findOne(id: string): Promise<GetUserResDto> {
     // Find the user by ID
-    const user: User = await this.userRepository.findOne({
+    const user: GetUserResDto = await prisma.users.findUnique({
       where: {
         id,
       },
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
-        createdAt: true,
+        first_name: true,
+        last_name: true,
+        created_at: true,
         avatar: true,
         email: true,
-        isActive: true,
-        isDelete: true,
+        is_active: true,
+        is_delete: true,
         admin: true,
-        authId: true,
+        auth_id: true,
       },
     });
 
@@ -106,17 +105,17 @@ export class UserService {
     updateUserDto: UpdateUserDto,
   ): Promise<UpdateUserResDto> {
     // Find the user by ID
-    const user: User = await this.userRepository.findOne({
+    const user = await prisma.users.findUnique({
       where: {
         id,
       },
       select: {
         id: true,
-        authId: true,
-        firstName: true,
-        lastName: true,
-        isDelete: true,
-        isActive: true,
+        auth_id: true,
+        first_name: true,
+        last_name: true,
+        is_delete: true,
+        is_active: true,
         admin: true,
       },
     });
@@ -131,10 +130,10 @@ export class UserService {
 
     // Prepare payload for updating user in the authentication service
     const payload = {
-      authId: user.authId,
+      authId: user.auth_id,
       updateUserDto: {
-        isActive: user.isActive,
-        isDelete: user.isDelete,
+        isActive: user.is_active,
+        isDelete: user.is_delete,
         admin: user.admin,
       },
     };
@@ -151,16 +150,22 @@ export class UserService {
       throw new InternalServerErrorException(result.reason.message);
     }
 
-    // Save the updated user entity
-    await this.userRepository.save(user);
+    await prisma.users.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        ...updateUserDto,
+      },
+    });
 
     // Return success message
     return { message: 'The user has been successfully updated.' };
   }
 
-  async validateUserByAuthId(authId: string): Promise<User> {
-    return this.userRepository.findOne({
-      where: { authId, isDelete: false, isActive: true },
+  async validateUserByAuthId(authId: string): Promise<any> {
+    return prisma.users.findUnique({
+      where: { auth_id: authId, is_delete: false, is_active: true },
     });
   }
 }

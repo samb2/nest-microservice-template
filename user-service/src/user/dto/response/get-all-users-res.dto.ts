@@ -9,28 +9,28 @@ export class UserDto {
   email: string;
 
   @ApiProperty()
-  authId: string;
+  auth_id: string;
 
   @ApiProperty()
   avatar: string;
 
   @ApiProperty()
-  firstName: string;
+  first_name: string;
 
   @ApiProperty()
-  lastName: string;
+  last_name: string;
 
   @ApiProperty()
-  isActive: boolean;
+  is_active: boolean;
 
   @ApiProperty()
-  isDelete: boolean;
+  is_delete: boolean;
 
   @ApiProperty()
   admin: boolean;
 
   @ApiProperty()
-  createdAt: Date;
+  created_at: Date;
 }
 
 export class GetAllUsersResDto {

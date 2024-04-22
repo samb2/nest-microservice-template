@@ -9,18 +9,14 @@ import {
   sendMicroMessage,
   ServiceNameEnum,
 } from '@irole/microservices';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../../user/entities/user.entity';
 import { DeleteAvatarDto, UpdateAvatarDto } from './dto';
+import { prisma } from '../../prisma';
 
 @Injectable()
 export class ProfileMicroserviceService {
   constructor(
     @Inject(ServiceNameEnum.FILE) private readonly fileClient: ClientProxy,
     @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
   ) {}
 
   async updateAvatar(
@@ -33,9 +29,9 @@ export class ProfileMicroserviceService {
 
     try {
       // Find the user by authId from the repository
-      const user: User = await this.userRepository.findOne({
+      const user = await prisma.users.findUnique({
         where: {
-          authId: updateAvatarDto.data.authId,
+          auth_id: updateAvatarDto.data.authId,
         },
         select: {
           id: true,
@@ -63,10 +59,14 @@ export class ProfileMicroserviceService {
       }
 
       // Update user's avatar with the new avatar path
-      user.avatar = updateAvatarDto.data.avatar;
-
-      // Save the updated user entity
-      await this.userRepository.save(user);
+      await prisma.users.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          avatar: updateAvatarDto.data.avatar,
+        },
+      });
 
       // Acknowledge the message in the RabbitMQ channel
       channel.ack(originalMsg);
@@ -106,9 +106,9 @@ export class ProfileMicroserviceService {
 
     try {
       // Find the user by authId from the repository
-      const user: User = await this.userRepository.findOne({
+      const user = await prisma.users.findUnique({
         where: {
-          authId: deleteAvatarDto.data.authId,
+          auth_id: deleteAvatarDto.data.authId,
         },
         select: {
           id: true,
@@ -121,11 +121,11 @@ export class ProfileMicroserviceService {
         throw new NotFoundException('user not found!');
       }
 
-      // Set user's avatar to null to delete it
-      user.avatar = null;
-
-      // Save the updated user entity
-      await this.userRepository.save(user);
+      // Update the user avatar to null
+      await prisma.users.update({
+        where: { id: user.id },
+        data: { avatar: null },
+      });
 
       // Acknowledge the message in the RabbitMQ channel
       channel.ack(originalMsg);

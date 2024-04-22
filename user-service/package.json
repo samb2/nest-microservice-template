@@ -18,11 +18,12 @@
     "test:cov": "cross-env NODE_ENV=test jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "cross-env NODE_ENV=test jest --config ./test/jest-e2e.json --maxWorkers=1",
-    "migration:generate": "npm run typeorm -- migration:create",
-    "create:migrations": "npm run migration:generate src/database/migrations/create-table-users",
-    "migrate": "cross-env NODE_ENV=development npm run typeorm -- migration:run -d src/config/database.config.ts",
-    "migrate:down": "cross-env NODE_ENV=development npm run typeorm -- migration:revert -d src/config/database.config.ts",
-    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
+    "prisma:init": "npx prisma init",
+    "prisma:generate": "npx prisma generate",
+    "prisma:pull": "npx prisma db pull",
+    "prisma:migrate": "npx prisma migrate deploy",
+    "prisma:migrate:dev": "npx prisma migrate dev --name init",
+    "prisma:seed": "npx prisma db seed"
   },
   "dependencies": {
     "@irole/microservices": "^1.17.2",
@@ -38,7 +39,7 @@
     "@nestjs/swagger": "^7.1.16",
     "@nestjs/terminus": "^10.2.0",
     "@nestjs/throttler": "^5.0.1",
-    "@nestjs/typeorm": "^10.0.1",
+    "@prisma/client": "^5.12.1",
     "@types/compression": "^1.7.5",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.3",
@@ -56,8 +57,7 @@
     "pg": "^8.11.3",
     "redis": "^4.6.11",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1",
-    "typeorm": "^0.3.17"
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.2.1",
@@ -76,6 +76,7 @@
     "eslint-plugin-prettier": "^5.0.1",
     "jest": "^29.7.0",
     "prettier": "^3.1.0",
+    "prisma": "^5.12.1",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1",
@@ -100,5 +101,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

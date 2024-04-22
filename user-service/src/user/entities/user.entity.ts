@@ -1,58 +1,31 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  UpdateDateColumn,
-} from 'typeorm';
 import { Exclude } from 'class-transformer';
 
-@Entity({ name: 'users' })
 export class User {
-  @PrimaryGeneratedColumn('uuid') // Specify 'uuid' type for the primary key
   id: string;
 
-  @Column({ unique: true })
   email: string;
 
-  @Column({ name: 'auth_id', unique: true })
-  authId: string;
+  auth_id: string;
 
-  @Column({ nullable: true })
   avatar: string;
 
-  @Column({ name: 'first_name', nullable: true })
-  firstName: string;
+  first_name: string;
 
-  @Column({ name: 'last_name', nullable: true })
-  lastName: string;
+  last_name: string;
 
-  @Column({ name: 'is_active', default: true })
   @Exclude()
-  isActive: boolean;
+  is_active: boolean;
 
-  @Column({ name: 'is_delete', default: false })
   @Exclude()
-  isDelete: boolean;
+  is_delete: boolean;
 
-  @Column({ name: 'super_admin', default: false })
   @Exclude()
-  superAdmin: boolean;
+  super_admin: boolean;
 
-  @Column({ default: false })
   @Exclude()
   admin: boolean;
 
-  @Column({
-    name: 'created_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date;
+  created_at: Date;
 
-  @UpdateDateColumn({
-    name: 'updated_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
+  updated_at: Date;
 }

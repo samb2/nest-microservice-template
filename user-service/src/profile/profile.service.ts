@@ -5,10 +5,7 @@ import {
 } from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ProfileMicroserviceService } from './microservice/profile-microservice.service';
-import { createTransaction } from '../utils/create-transaction.util';
 import * as process from 'node:process';
 import {
   DeleteAvatarResDto,
@@ -17,29 +14,26 @@ import {
   UpdateProfileDto,
   UpdateProfileResDto,
 } from './dto';
+import { prisma } from '../prisma';
 
 @Injectable()
 export class ProfileService {
   constructor(
-    @InjectDataSource()
-    private readonly dataSource: DataSource,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
     private readonly profileMicroserviceService: ProfileMicroserviceService,
   ) {}
 
-  async findOne(user: User): Promise<User> {
+  async findOne(user: User): Promise<any> {
     return {
       id: user.id,
       email: user.email,
-      authId: user.authId,
+      authId: user.auth_id,
       avatar: user.avatar
         ? `${process.env.MINIO_STORAGE_URL}${user.avatar}`
         : null,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      createdAt: user.createdAt,
-    } as User;
+      firstName: user.first_name,
+      lastName: user.last_name,
+      createdAt: user.created_at,
+    };
   }
 
   async update(
@@ -47,20 +41,20 @@ export class ProfileService {
     user: User,
   ): Promise<UpdateProfileResDto> {
     // Destructure the fields from the DTO
-    let { firstName, lastName } = updateProfileDto;
+    let { first_name, last_name } = updateProfileDto;
 
     // If firstName or lastName is not provided in the DTO, use the existing values from the user entity
-    firstName = firstName ? firstName : user.firstName;
-    lastName = lastName ? lastName : user.lastName;
+    first_name = first_name ? first_name : user.first_name;
+    last_name = last_name ? last_name : user.last_name;
 
     // Update the user's profile in the database
-    await this.userRepository.update(
-      { id: user.id },
-      {
-        firstName,
-        lastName,
+    await prisma.users.update({
+      where: { id: user.id },
+      data: {
+        first_name,
+        last_name,
       },
-    );
+    });
 
     // Return a success message
     return { message: `profile update successfully` };
@@ -73,7 +67,7 @@ export class ProfileService {
     // Construct payload with user's authentication ID
     const payload = {
       ...updateProfileDto,
-      authId: user.authId,
+      authId: user.auth_id,
     };
 
     // Send password update request to the authentication service
@@ -93,12 +87,6 @@ export class ProfileService {
   }
 
   async deleteAvatar(id: string, avatar: string): Promise<DeleteAvatarResDto> {
-    // Create Transaction
-    const queryRunner: QueryRunner = await createTransaction(this.dataSource);
-
-    // Get Repositories
-    const userRep: Repository<User> = queryRunner.manager.getRepository(User);
-
     try {
       // If the avatar path is not provided, throw NotFoundException
       if (!avatar) {
@@ -106,7 +94,11 @@ export class ProfileService {
       }
 
       // Update the user's avatar to null in the database
-      await userRep.update({ id }, { avatar: null });
+      const updateUser = prisma.users.update({
+        where: { id },
+        data: { avatar: null },
+      });
+      //await userRep.update({ id }, { avatar: null });
 
       // send to file service
       const payload = {
@@ -124,18 +116,15 @@ export class ProfileService {
       if (result.error) {
         throw new InternalServerErrorException(result.reason.message);
       }
+      throw new InternalServerErrorException('test');
       // Commit the transaction
-      await queryRunner.commitTransaction();
+      await prisma.$transaction([updateUser]);
 
       // Return success message
       return { message: 'Avatar deleted successfully' };
     } catch (e) {
       // Rollback the transaction in case of an error
-      await queryRunner.rollbackTransaction();
       throw e;
-    } finally {
-      // Release the query runner
-      await queryRunner.release();
     }
   }
 }

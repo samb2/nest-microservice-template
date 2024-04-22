@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { ProfileController } from './profile.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../user/entities/user.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ServiceNameEnum } from '@irole/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -11,7 +9,6 @@ import { ProfileMicroserviceController } from './microservice/profile-microservi
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
     ClientsModule.registerAsync([
       {
         name: ServiceNameEnum.FILE,

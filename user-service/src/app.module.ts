@@ -4,17 +4,15 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import * as process from 'process';
 import configuration from './config/configuration';
-import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { UserModule } from './user/user.module';
 import { LoggerMiddleware } from '@irole/microservices';
 import { ProfileModule } from './profile/profile.module';
-import { RedisHealthIndicator } from './redis/RedisHealthIndicator';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
-import { RedisModule } from './redis/redis.module';
+import { RedisHealthIndicator, RedisModule } from './redis';
 
 @Module({
   imports: [
@@ -25,7 +23,6 @@ import { RedisModule } from './redis/redis.module';
       cache: true,
     }),
     TerminusModule,
-    DatabaseModule,
     RedisModule,
     PassportModule.register({ defaultStrategy: 'jwt-access' }),
     JwtModule.register({}),

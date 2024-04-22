@@ -5,7 +5,7 @@ export class GetUserResDto {
   id: string;
 
   @ApiProperty({})
-  authId: string;
+  auth_id: string;
 
   @ApiProperty({})
   email: string;
@@ -14,22 +14,22 @@ export class GetUserResDto {
   avatar: string;
 
   @ApiProperty({})
-  firstName: string;
+  first_name: string;
 
   @ApiProperty({})
-  lastName: string;
+  last_name: string;
 
   @ApiProperty({})
-  isActive: boolean;
+  is_active: boolean;
 
   @ApiProperty({ default: false })
-  isDelete: boolean;
+  is_delete: boolean;
 
   @ApiProperty({ default: false })
   admin: boolean;
 
   @ApiProperty({})
-  createdAt: Date;
+  created_at: Date;
 
   constructor(partial: Partial<GetUserResDto>) {
     Object.assign(this, partial);
