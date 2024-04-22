@@ -33,7 +33,7 @@ FROM base as deps
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
     --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --prod --frozen-lockfile && npx prisma generate
+    pnpm install --prod --frozen-lockfile
 
 # Copy the rest of the source files into the image.
 COPY . .
