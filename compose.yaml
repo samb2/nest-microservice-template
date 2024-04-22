@@ -13,9 +13,9 @@ services:
       mongo-file:
         condition: service_healthy
       redis-common:
-        condition: service_started
+        condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
 
   user-service:
     build:
@@ -31,9 +31,9 @@ services:
       postgres:
         condition: service_healthy
       redis-common:
-        condition: service_started
+        condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
 
   auth-service:
     build:
@@ -49,9 +49,9 @@ services:
       postgres:
         condition: service_healthy
       redis-auth:
-        condition: service_started
+        condition: service_healthy
       redis-common:
-        condition: service_started
+        condition: service_healthy
       rabbitmq:
         condition: service_started
 
@@ -132,6 +132,12 @@ services:
       - "8001:8001"
     volumes:
       - redis_auth:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
       - auth_network
 
@@ -146,6 +152,12 @@ services:
       - "8002:8001"
     volumes:
       - redis_common:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
       - file_network
       - auth_network
@@ -163,6 +175,11 @@ services:
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
     volumes:
       - rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-plugins", "list" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - file_network
       - auth_network

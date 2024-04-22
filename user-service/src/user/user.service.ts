@@ -13,12 +13,13 @@ import {
   UpdateUserDto,
   UpdateUserResDto,
 } from './dto';
-import { prisma } from '../prisma';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userMicroserviceService: UserMicroserviceService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   async findAll(findUsersDto?: FindUsersQueryDto): Promise<GetAllUsersResDto> {
@@ -38,7 +39,7 @@ export class UserService {
     const orderDirection: string = sort || 'asc';
 
     // Retrieve users and total count based on provided criteria
-    const users = await prisma.users.findMany({
+    const users = await this.prismaService.users.findMany({
       where: whereConditions,
       select: {
         id: true,
@@ -59,7 +60,7 @@ export class UserService {
       },
     });
 
-    const itemCount = await prisma.users.count({
+    const itemCount = await this.prismaService.users.count({
       where: whereConditions,
     });
     // Generate pagination metadata
@@ -73,7 +74,7 @@ export class UserService {
 
   async findOne(id: string): Promise<GetUserResDto> {
     // Find the user by ID
-    const user: GetUserResDto = await prisma.users.findUnique({
+    const user: GetUserResDto = await this.prismaService.users.findUnique({
       where: {
         id,
       },
@@ -105,7 +106,7 @@ export class UserService {
     updateUserDto: UpdateUserDto,
   ): Promise<UpdateUserResDto> {
     // Find the user by ID
-    const user = await prisma.users.findUnique({
+    const user = await this.prismaService.users.findUnique({
       where: {
         id,
       },
@@ -150,7 +151,7 @@ export class UserService {
       throw new InternalServerErrorException(result.reason.message);
     }
 
-    await prisma.users.update({
+    await this.prismaService.users.update({
       where: {
         id: user.id,
       },
@@ -164,7 +165,7 @@ export class UserService {
   }
 
   async validateUserByAuthId(authId: string): Promise<any> {
-    return prisma.users.findUnique({
+    return this.prismaService.users.findUnique({
       where: { auth_id: authId, is_delete: false, is_active: true },
     });
   }

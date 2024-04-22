@@ -13,6 +13,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
 import { RedisHealthIndicator, RedisModule } from './redis';
+import { PrismaModule } from 'nestjs-prisma';
 
 @Module({
   imports: [
@@ -23,6 +24,9 @@ import { RedisHealthIndicator, RedisModule } from './redis';
       cache: true,
     }),
     TerminusModule,
+    PrismaModule.forRoot({
+      isGlobal: true,
+    }),
     RedisModule,
     PassportModule.register({ defaultStrategy: 'jwt-access' }),
     JwtModule.register({}),

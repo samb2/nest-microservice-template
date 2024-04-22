@@ -11,12 +11,13 @@ import {
   sendMicroMessage,
   PatternEnum,
 } from '@irole/microservices';
-import { prisma } from '../../prisma';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class UserMicroserviceService {
   constructor(
     @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
+    private readonly prismaService: PrismaService,
   ) {}
 
   async create(
@@ -30,7 +31,7 @@ export class UserMicroserviceService {
         throw new RequestTimeoutException('Token Expired');
       }
 
-      await prisma.users.create({
+      await this.prismaService.users.create({
         data: {
           email: createUserDto.data.email,
           auth_id: createUserDto.data.authId,

@@ -18,6 +18,10 @@ WORKDIR /usr/src/app
 RUN --mount=type=cache,target=/root/.npm \
     npm install -g pnpm@${PNPM_VERSION}
 
+RUN --mount=type=cache,target=/root/.npm \
+    npm install -g prisma
+
+
 ################################################################################
 # Create a stage for installing production dependecies.
 FROM base as deps
@@ -29,7 +33,12 @@ FROM base as deps
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
     --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --prod --frozen-lockfile
+    pnpm install --prod --frozen-lockfile && npx prisma generate
+
+# Copy the rest of the source files into the image.
+COPY . .
+
+RUN npm run prisma:generate
 
 ################################################################################
 # Create a stage for building the application.
@@ -42,8 +51,6 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
-# Copy the rest of the source files into the image.
-COPY . .
 # Run the build script.
 RUN npm run build
 

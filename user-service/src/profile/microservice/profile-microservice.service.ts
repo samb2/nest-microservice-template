@@ -10,13 +10,14 @@ import {
   ServiceNameEnum,
 } from '@irole/microservices';
 import { DeleteAvatarDto, UpdateAvatarDto } from './dto';
-import { prisma } from '../../prisma';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class ProfileMicroserviceService {
   constructor(
     @Inject(ServiceNameEnum.FILE) private readonly fileClient: ClientProxy,
     @Inject(ServiceNameEnum.AUTH) private readonly authClient: ClientProxy,
+    private readonly prismaService: PrismaService,
   ) {}
 
   async updateAvatar(
@@ -29,7 +30,7 @@ export class ProfileMicroserviceService {
 
     try {
       // Find the user by authId from the repository
-      const user = await prisma.users.findUnique({
+      const user = await this.prismaService.users.findUnique({
         where: {
           auth_id: updateAvatarDto.data.authId,
         },
@@ -59,7 +60,7 @@ export class ProfileMicroserviceService {
       }
 
       // Update user's avatar with the new avatar path
-      await prisma.users.update({
+      await this.prismaService.users.update({
         where: {
           id: user.id,
         },
@@ -106,7 +107,7 @@ export class ProfileMicroserviceService {
 
     try {
       // Find the user by authId from the repository
-      const user = await prisma.users.findUnique({
+      const user = await this.prismaService.users.findUnique({
         where: {
           auth_id: deleteAvatarDto.data.authId,
         },
@@ -122,7 +123,7 @@ export class ProfileMicroserviceService {
       }
 
       // Update the user avatar to null
-      await prisma.users.update({
+      await this.prismaService.users.update({
         where: { id: user.id },
         data: { avatar: null },
       });

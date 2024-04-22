@@ -14,12 +14,13 @@ import {
   UpdateProfileDto,
   UpdateProfileResDto,
 } from './dto';
-import { prisma } from '../prisma';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class ProfileService {
   constructor(
     private readonly profileMicroserviceService: ProfileMicroserviceService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   async findOne(user: User): Promise<any> {
@@ -48,7 +49,7 @@ export class ProfileService {
     last_name = last_name ? last_name : user.last_name;
 
     // Update the user's profile in the database
-    await prisma.users.update({
+    await this.prismaService.users.update({
       where: { id: user.id },
       data: {
         first_name,
@@ -94,7 +95,7 @@ export class ProfileService {
       }
 
       // Update the user's avatar to null in the database
-      const updateUser = prisma.users.update({
+      const updateUser = this.prismaService.users.update({
         where: { id },
         data: { avatar: null },
       });
@@ -118,7 +119,7 @@ export class ProfileService {
       }
 
       // Commit the transaction
-      await prisma.$transaction([updateUser]);
+      await this.prismaService.$transaction([updateUser]);
 
       // Return success message
       return { message: 'Avatar deleted successfully' };
