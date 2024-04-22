@@ -116,7 +116,7 @@ export class ProfileService {
       if (result.error) {
         throw new InternalServerErrorException(result.reason.message);
       }
-      throw new InternalServerErrorException('test');
+
       // Commit the transaction
       await prisma.$transaction([updateUser]);
 

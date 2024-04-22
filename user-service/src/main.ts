@@ -17,7 +17,6 @@ import {
   winstonLogger,
 } from '@irole/microservices';
 
-// todo readme
 async function bootstrap(): Promise<void> {
   const app: INestApplication = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);

@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { User } from './entities/user.entity';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import {
@@ -10,18 +9,16 @@ import {
   ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ResetPassword } from './entities/reset-password.entity';
 import configuration from '../config/configuration';
 import {
   inValidEmailUser,
   validUser,
   wrongPassword,
 } from '../../test/constants/userData';
-import { RegisterResDto } from './dto/response/register-res.dto';
 import * as bcrypt from 'bcrypt';
-import { bcryptPassword } from '../utils/password.util';
-import { LoginResDto } from './dto/response/login-res.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { ResetPassword, User } from './entities';
+import { LoginResDto, RegisterResDto } from './dto';
 
 // Mocking the User and ResetPassword repositories
 class UserRepositoryMock {
@@ -50,7 +47,6 @@ describe('AuthService', () => {
   let resetPasswordRepository: Repository<ResetPassword>;
   let jwtService: JwtService;
   let dataSource: DataSource;
-  let cacheManager: Cache;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -93,7 +89,7 @@ describe('AuthService', () => {
     resetPasswordRepository = module.get<Repository<ResetPassword>>(
       getRepositoryToken(ResetPassword),
     );
-    cacheManager = module.get<Cache>(CACHE_MANAGER);
+    //cacheManager = module.get<Cache>(CACHE_MANAGER);
   });
 
   it('should be defined', () => {
@@ -155,11 +151,11 @@ describe('AuthService', () => {
   describe('login', () => {
     it('should login successfully', async () => {
       // Mock successful login
-      jest.spyOn(authService, 'validateUserByEmail').mockResolvedValueOnce({
-        email: validUser.email,
-        password: await bcryptPassword(validUser.password),
-        isActive: true,
-      } as User);
+      // jest.spyOn(authService, 'validateUserByEmail').mockResolvedValueOnce({
+      //   email: validUser.email,
+      //   password: await bcryptPassword(validUser.password),
+      //   isActive: true,
+      // } as User);
 
       // Call login method
       const res: LoginResDto = await authService.login(validUser);
@@ -170,9 +166,9 @@ describe('AuthService', () => {
 
     it('should throw if user does not exist', async () => {
       // User not found
-      jest
-        .spyOn(authService, 'validateUserByEmail')
-        .mockResolvedValueOnce(undefined);
+      // jest
+      //   .spyOn(authService, 'validateUserByEmail')
+      //   .mockResolvedValueOnce(undefined);
 
       await expect(authService.login(inValidEmailUser)).rejects.toThrowError(
         UnauthorizedException,
@@ -181,11 +177,11 @@ describe('AuthService', () => {
 
     it('should throw if password is invalid', async () => {
       // User found
-      jest.spyOn(authService, 'validateUserByEmail').mockResolvedValueOnce({
-        email: validUser.email,
-        password: await bcryptPassword(validUser.password),
-        isActive: true,
-      } as User);
+      // jest.spyOn(authService, 'validateUserByEmail').mockResolvedValueOnce({
+      //   email: validUser.email,
+      //   password: await bcryptPassword(validUser.password),
+      //   isActive: true,
+      // } as User);
 
       // Invalid password
       await expect(authService.login(wrongPassword)).rejects.toThrowError(
@@ -195,11 +191,11 @@ describe('AuthService', () => {
 
     it('should throw account is inActive', async () => {
       // User found
-      jest.spyOn(authService, 'validateUserByEmail').mockResolvedValueOnce({
-        email: validUser.email,
-        password: await bcryptPassword(validUser.password),
-        isActive: false,
-      } as User);
+      // jest.spyOn(authService, 'validateUserByEmail').mockResolvedValueOnce({
+      //   email: validUser.email,
+      //   password: await bcryptPassword(validUser.password),
+      //   isActive: false,
+      // } as User);
 
       await expect(authService.login(validUser)).rejects.toThrowError(
         ForbiddenException,
