@@ -21,6 +21,9 @@ RUN --mount=type=cache,target=/root/.npm \
 RUN --mount=type=cache,target=/root/.npm \
     npm install -g prisma
 
+RUN --mount=type=cache,target=/root/.npm \
+    npm install -g dotenv-cli
+
 
 ################################################################################
 # Create a stage for installing production dependecies.
@@ -38,7 +41,7 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 # Copy the rest of the source files into the image.
 COPY . .
 
-RUN npm run prisma:generate
+RUN npm run prisma:generate:prod
 
 ################################################################################
 # Create a stage for building the application.

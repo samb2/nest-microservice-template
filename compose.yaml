@@ -1,21 +1,21 @@
 services:
-  file-service:
-    build:
-      context: ./file-service
-    environment:
-      NODE_ENV: production
-    container_name: file-service
-    ports:
-      - "4000:4000"
-    networks:
-      - file_network
-    depends_on:
-      mongo-file:
-        condition: service_healthy
-      redis-common:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+#  file-service:
+#    build:
+#      context: ./file-service
+#    environment:
+#      NODE_ENV: production
+#    container_name: file-service
+#    ports:
+#      - "4000:4000"
+#    networks:
+#      - file_network
+#    depends_on:
+#      mongo-file:
+#        condition: service_healthy
+#      redis-common:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
 
   user-service:
     build:
@@ -35,25 +35,25 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  auth-service:
-    build:
-      context: ./auth-service
-    environment:
-      NODE_ENV: production
-    container_name: auth-service
-    ports:
-      - "3000:3000"
-    networks:
-      - auth_network
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis-auth:
-        condition: service_healthy
-      redis-common:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
+#  auth-service:
+#    build:
+#      context: ./auth-service
+#    environment:
+#      NODE_ENV: production
+#    container_name: auth-service
+#    ports:
+#      - "3000:3000"
+#    networks:
+#      - auth_network
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      redis-auth:
+#        condition: service_healthy
+#      redis-common:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_started
 
   postgres:
     image: postgres

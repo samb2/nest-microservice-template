@@ -19,12 +19,13 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "cross-env NODE_ENV=test jest --config ./test/jest-e2e.json --maxWorkers=1",
     "prisma:init": "npx prisma init",
-    "prisma:generate": "npx prisma generate",
+    "prisma:generate": "dotenv -e .env.development npx prisma generate",
+    "prisma:generate:prod": "dotenv -e .env.production npx prisma generate",
     "prisma:pull": "npx prisma db pull",
-    "prisma:migrate": "npx prisma migrate deploy",
-    "prisma:migrate:dev": "npx prisma migrate dev --name init",
-    "prisma:seed": "npx prisma db seed",
-    "start:migrate:prod": "prisma migrate deploy && npm run start:prod"
+    "prisma:migrate": "dotenv -e .env.development npx prisma migrate deploy",
+    "prisma:migrate:dev": "dotenv -e .env.development npx prisma migrate dev --name init",
+    "prisma:seed": "dotenv -e .env.development npx prisma db seed",
+    "start:migrate:prod": "dotenv -e .env.production prisma migrate deploy && npm run start:prod"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
