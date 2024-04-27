@@ -31,13 +31,17 @@ export class MicroserviceService implements IMicroservice {
     createUserDto: CreateUserDto,
     context: RmqContext,
   ): Promise<MicroResInterface> {
+    // Get the channel and original message from the RabbitMQ context
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
+
     try {
+      // Check expire time
       if (!expireCheck(createUserDto.ttl)) {
         throw new RequestTimeoutException('Token Expired');
       }
 
+      // Create user
       await this.prismaService.users.create({
         data: {
           email: createUserDto.data.email,
@@ -45,7 +49,10 @@ export class MicroserviceService implements IMicroservice {
         },
       });
 
+      // Acknowledge the message in the RabbitMQ channel
       channel.ack(originalMsg);
+
+      // Generate response message with success status
       return generateResMessage(
         ServiceNameEnum.USER,
         ServiceNameEnum.AUTH,
@@ -53,7 +60,10 @@ export class MicroserviceService implements IMicroservice {
         false,
       );
     } catch (e) {
+      // If an error occurs, reject the message in the RabbitMQ channel
       await channel.reject(originalMsg, false);
+
+      // Generate response message with error status
       return generateResMessage(
         ServiceNameEnum.USER,
         ServiceNameEnum.AUTH,

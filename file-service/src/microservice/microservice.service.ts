@@ -3,7 +3,6 @@ import {
   MicroSendInterface,
   PatternEnum,
   ServiceNameEnum,
-  expireCheck,
   generateMessage,
   generateResMessage,
   sendMicroMessage,

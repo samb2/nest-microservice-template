@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ForgotPasswordEvent, UserRegisteredEvent } from './dto';
 import { EventEnum } from './enum/event.enum';
@@ -17,6 +17,7 @@ export class EventsService implements OnModuleInit {
     this.eventEmitter.on(
       EventEnum.USER_REGISTERED,
       (event: UserRegisteredEvent) => {
+        Logger.log(event);
         // Here you can add logic to send an email or perform other actions
       },
     );

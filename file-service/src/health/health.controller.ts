@@ -5,7 +5,7 @@ import {
   MongooseHealthIndicator,
 } from '@nestjs/terminus';
 import { ApiTags } from '@nestjs/swagger';
-import { RedisHealthIndicator } from '../redis/RedisHealthIndicator';
+import { RedisHealthIndicator } from 'src/redis';
 
 @ApiTags('Health Check')
 @Controller('health')
