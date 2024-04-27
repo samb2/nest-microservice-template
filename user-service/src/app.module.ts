@@ -14,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
 import { RedisHealthIndicator, RedisModule } from './redis';
 import { PrismaModule } from 'nestjs-prisma';
+import { MicroserviceModule } from './microservice/microservice.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PrismaModule } from 'nestjs-prisma';
     }),
     UserModule,
     ProfileModule,
+    MicroserviceModule,
   ],
   controllers: [HealthController],
   providers: [

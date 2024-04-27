@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
-import { UserMicroserviceService } from './microservice/user-microservice.service';
 import { PageMetaDto } from '../utils/dto/page-meta.dto';
 import {
   FindUsersQueryDto,
@@ -14,11 +13,12 @@ import {
   UpdateUserResDto,
 } from './dto';
 import { PrismaService } from 'nestjs-prisma';
+import { MicroserviceService } from '../microservice/microservice.service';
 
 @Injectable()
 export class UserService {
   constructor(
-    private readonly userMicroserviceService: UserMicroserviceService,
+    private readonly microserviceService: MicroserviceService,
     private readonly prismaService: PrismaService,
   ) {}
 
@@ -141,7 +141,7 @@ export class UserService {
 
     // Send request to the user microservice to update the user in the authentication service
     const result: MicroResInterface =
-      await this.userMicroserviceService.sendToAuthService(
+      await this.microserviceService.sendToAuthService(
         PatternEnum.AUTH_UPDATE_USER,
         payload,
       );

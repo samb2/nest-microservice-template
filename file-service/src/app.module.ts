@@ -14,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
 import { LoggerMiddleware } from '@irole/microservices';
 import { RedisHealthIndicator, RedisModule } from './redis';
+import { MicroserviceModule } from './microservice/microservice.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { RedisHealthIndicator, RedisModule } from './redis';
     }),
     FileModule,
     MinioModule,
+    MicroserviceModule,
   ],
   controllers: [HealthController],
   providers: [

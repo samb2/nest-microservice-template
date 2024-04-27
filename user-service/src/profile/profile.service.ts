@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
-import { ProfileMicroserviceService } from './microservice/profile-microservice.service';
 import * as process from 'node:process';
 import {
   DeleteAvatarResDto,
@@ -15,11 +14,12 @@ import {
   UpdateProfileResDto,
 } from './dto';
 import { PrismaService } from 'nestjs-prisma';
+import { MicroserviceService } from '../microservice/microservice.service';
 
 @Injectable()
 export class ProfileService {
   constructor(
-    private readonly profileMicroserviceService: ProfileMicroserviceService,
+    private readonly microserviceService: MicroserviceService,
     private readonly prismaService: PrismaService,
   ) {}
 
@@ -73,7 +73,7 @@ export class ProfileService {
 
     // Send password update request to the authentication service
     const result: MicroResInterface =
-      await this.profileMicroserviceService.sendToAuthService(
+      await this.microserviceService.sendToAuthService(
         PatternEnum.AUTH_UPDATE_PASSWORD,
         payload,
       );
@@ -108,7 +108,7 @@ export class ProfileService {
 
       // Send a request to the file service to delete the avatar file
       const result: MicroResInterface =
-        await this.profileMicroserviceService.sendToFileService(
+        await this.microserviceService.sendToFileService(
           PatternEnum.FILE_AVATAR_DELETED,
           payload,
         );

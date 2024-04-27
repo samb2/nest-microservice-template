@@ -19,7 +19,6 @@ import {
   PatternEnum,
 } from '@irole/microservices';
 import { RoleEnum } from '../role/enum/role.enum';
-import { AuthMicroserviceService } from './microservice/auth-microservice.service';
 import { TokenService } from '../token/token.service';
 import { TokenTypeEnum } from '../token/enum/token-type.enum';
 import {
@@ -38,11 +37,15 @@ import { IAuthServiceInterface, JwtForgotPayload } from './interfaces';
 import { ResetPassword, User, UsersRoles } from './entities';
 import { Role } from '../role/entities';
 import { RedisAuthService } from '../redis';
+import { MicroserviceService } from '../microservice/microservice.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEnum } from '../events/enum/event.enum';
 
 @Injectable()
 export class AuthService implements IAuthServiceInterface {
   constructor(
-    private readonly authMicroserviceService: AuthMicroserviceService,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly microserviceService: MicroserviceService,
     private readonly tokenService: TokenService,
     private readonly configService: ConfigService,
     @InjectRepository(User)
@@ -105,7 +108,7 @@ export class AuthService implements IAuthServiceInterface {
       };
 
       const result: MicroResInterface =
-        await this.authMicroserviceService.sendToUserService(
+        await this.microserviceService.sendToUserService(
           PatternEnum.USER_REGISTERED,
           payload,
           '10s',
@@ -201,19 +204,30 @@ export class AuthService implements IAuthServiceInterface {
       // Find the user by email and ensure they are not marked for deletion
       const user: User = await this.userRepository.findOne({
         where: { email, isDelete: false },
-        select: { id: true, isActive: true },
+        select: { id: true, isActive: true, email: true },
       });
 
       // If user exists and is active, generate reset password token and save it
       if (user && user.isActive) {
         const payload: JwtForgotPayload = { authId: user.id };
+        const token: string = this.tokenService.generateToken(
+          payload,
+          TokenTypeEnum.EMAIL,
+        );
         const resetPassword: ResetPassword = this.resetPasswordRep.create({
           user: user,
-          token: this.tokenService.generateToken(payload, TokenTypeEnum.EMAIL),
+          token,
         });
 
         await this.resetPasswordRep.save(resetPassword);
+
         // send Email
+        const emailPayload = {
+          email: user.email,
+          token,
+        };
+
+        this.eventEmitter.emit(EventEnum.FORGOT_PASSWORD, emailPayload);
       }
 
       // Return success message
@@ -313,22 +327,6 @@ export class AuthService implements IAuthServiceInterface {
 
       // Return success message
       return { message: 'Logout Successfully' };
-    } catch (e) {
-      throw new InternalServerErrorException(e.message);
-    }
-  }
-
-  public async validateUserByAuthId(id: string): Promise<User | undefined> {
-    try {
-      return this.userRepository.findOne({
-        where: { id, isDelete: false, isActive: true },
-        select: {
-          id: true,
-          email: true,
-          isActive: true,
-          superAdmin: true,
-        },
-      });
     } catch (e) {
       throw new InternalServerErrorException(e.message);
     }

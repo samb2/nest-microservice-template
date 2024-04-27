@@ -31,7 +31,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "@irole/microservices": "^1.17.2",
+    "@irole/microservices": "^1.18.0",
     "@nestjs/cache-manager": "^2.1.1",
     "@nestjs/common": "^10.3.3",
     "@nestjs/config": "^3.2.0",

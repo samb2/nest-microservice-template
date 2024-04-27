@@ -12,11 +12,11 @@ import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket } from '../minio/schemas/bucket.schema';
 import { File } from './schemas/file.schema';
 import { MicroResInterface, PatternEnum } from '@irole/microservices';
-import { FileMicroserviceService } from './microservice/file-microservice.service';
 import { InjectConnection } from '@nestjs/mongoose';
 import { ClientSession, Connection } from 'mongoose';
 import { BucketEnum } from '../minio/enum/bucket.enum';
 import { DeleteFileResDto, GetFileQueryDto } from './dto';
+import { MicroserviceService } from '../microservice/microservice.service';
 
 @Injectable()
 export class FileService {
@@ -25,7 +25,7 @@ export class FileService {
     @Inject(MinioService) private readonly minioService: MinioService,
     private readonly fileRepo: FileRepository,
     private readonly bucketRepo: BucketRepository,
-    private readonly fileMicroserviceService: FileMicroserviceService,
+    private readonly microserviceService: MicroserviceService,
   ) {}
 
   async uploadAvatar(image: any, user: any): Promise<File> {
@@ -75,7 +75,7 @@ export class FileService {
         avatar: `${bucket.name}/${bucketKey}`,
       };
       const result: MicroResInterface =
-        await this.fileMicroserviceService.sendToUserService(
+        await this.microserviceService.sendToUserService(
           PatternEnum.USER_AVATAR_UPLOADED,
           payload,
         );
@@ -171,7 +171,7 @@ export class FileService {
           avatar: `${file.key}`,
         };
         const result: MicroResInterface =
-          await this.fileMicroserviceService.sendToUserService(
+          await this.microserviceService.sendToUserService(
             PatternEnum.USER_AVATAR_DELETED,
             payload,
           );

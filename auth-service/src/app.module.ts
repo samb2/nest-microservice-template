@@ -15,6 +15,8 @@ import { TokenModule } from './token/token.module';
 import { PassportModule } from '@nestjs/passport';
 import { AccessTokenStrategy, RefreshTokenStrategy } from './utils/passport';
 import { RedisHealthIndicator, RedisModule } from './redis';
+import { MicroserviceModule } from './microservice/microservice.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { RedisHealthIndicator, RedisModule } from './redis';
     RoleModule,
     PermissionModule,
     TokenModule,
+    MicroserviceModule,
+    EventsModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -7,7 +7,7 @@ import {
   MicroResInterface,
   PatternEnum,
 } from '@irole/microservices';
-import { FileMicroserviceService } from '../../file/microservice/file-microservice.service';
+import { MicroserviceService } from '../../microservice/microservice.service';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(
@@ -16,8 +16,8 @@ export class AccessTokenStrategy extends PassportStrategy(
 ) {
   constructor(
     private configService: ConfigService,
-    @Inject(FileMicroserviceService)
-    private readonly fileMicroserviceService: FileMicroserviceService,
+    @Inject(MicroserviceService)
+    private readonly fileMicroserviceService: MicroserviceService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

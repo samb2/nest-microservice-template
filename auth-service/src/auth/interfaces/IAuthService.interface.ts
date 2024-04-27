@@ -27,6 +27,4 @@ export interface IAuthServiceInterface {
   refresh(email: string): RefreshResDto;
 
   logout(user: User): Promise<object>;
-
-  validateUserByAuthId(id: string): Promise<User | undefined>;
 }
