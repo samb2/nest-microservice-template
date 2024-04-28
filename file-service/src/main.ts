@@ -15,7 +15,7 @@ import {
   HttpExceptionFilter,
   ResponseInterceptor,
   winstonLogger,
-} from '@irole/microservices';
+} from '@samb2/nest-microservice';
 
 async function bootstrap(): Promise<void> {
   const app: INestApplication = await NestFactory.create(AppModule);

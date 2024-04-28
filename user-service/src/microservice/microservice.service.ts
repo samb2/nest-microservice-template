@@ -7,7 +7,7 @@ import {
   generateMessage,
   generateResMessage,
   sendMicroMessage,
-} from '@irole/microservices';
+} from '@samb2/nest-microservice';
 import {
   Inject,
   Injectable,

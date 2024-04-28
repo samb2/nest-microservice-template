@@ -6,7 +6,7 @@ import {
   JwtAccessPayload,
   MicroResInterface,
   PatternEnum,
-} from '@irole/microservices';
+} from '@samb2/nest-microservice';
 import { MicroserviceService } from '../../microservice/microservice.service';
 
 @Injectable()

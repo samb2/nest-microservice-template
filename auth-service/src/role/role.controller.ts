@@ -24,7 +24,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { PermissionEnum, Permissions } from '@irole/microservices';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
 import {
@@ -41,6 +40,7 @@ import {
 } from './dto';
 import { Role } from './entities';
 import { User, UsersRoles } from '../auth/entities';
+import { PermissionEnum, Permissions } from '@samb2/nest-microservice';
 
 @ApiTags('roles')
 @ApiBearerAuth()

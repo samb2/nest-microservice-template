@@ -1,4 +1,4 @@
-import { MicroResInterface, PatternEnum } from '@irole/microservices';
+import { MicroResInterface, PatternEnum } from '@samb2/nest-microservice';
 
 export interface IMicroservice {
   sendToAuthService(

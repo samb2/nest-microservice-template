@@ -10,7 +10,7 @@ import {
   ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { PermissionEnum, Permissions } from '@irole/microservices';
+import { PermissionEnum, Permissions } from '@samb2/nest-microservice';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,

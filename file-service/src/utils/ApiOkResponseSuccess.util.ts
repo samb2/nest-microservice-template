@@ -1,4 +1,4 @@
-import { ServiceNameEnum } from '@irole/microservices';
+import { ServiceNameEnum } from '@samb2/nest-microservice';
 import { applyDecorators, Type } from '@nestjs/common';
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 

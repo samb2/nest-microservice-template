@@ -7,7 +7,7 @@ import configuration from './config/configuration';
 import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { UserModule } from './user/user.module';
-import { LoggerMiddleware } from '@irole/microservices';
+import { LoggerMiddleware } from '@samb2/nest-microservice';
 import { ProfileModule } from './profile/profile.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';

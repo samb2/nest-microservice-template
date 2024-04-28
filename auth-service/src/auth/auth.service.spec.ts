@@ -16,7 +16,7 @@ import {
   MicroResInterface,
   PatternEnum,
   ServiceNameEnum,
-} from '@irole/microservices';
+} from '@samb2/nest-microservice';
 
 jest.mock('../utils/create-transaction.util');
 

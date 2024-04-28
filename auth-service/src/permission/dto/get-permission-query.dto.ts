@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
-import { SortEnum } from '@irole/microservices';
+import { SortEnum } from '@samb2/nest-microservice';
 
 export class GetPermissionQueryDto {
   @ApiPropertyOptional({ enum: SortEnum, default: SortEnum.ASC })

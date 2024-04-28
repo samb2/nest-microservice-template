@@ -16,7 +16,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Permission } from './entities/permission.entity';
-import { PermissionEnum, Permissions } from '@irole/microservices';
+import { PermissionEnum, Permissions } from '@samb2/nest-microservice';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
 import { GetPermissionQueryDto, GetPermissionRes } from './dto';

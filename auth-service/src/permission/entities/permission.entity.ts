@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { RolePermission } from '../../role/entities/role-permission.entity';
-import { PermissionEnum } from '@irole/microservices';
+import { PermissionEnum } from '@samb2/nest-microservice';
+import { RolePermission } from '../../role/entities';
 
 @Entity({ name: 'permissions' })
 export class Permission {

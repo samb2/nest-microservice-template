@@ -6,7 +6,7 @@ import * as process from 'process';
 import configuration from './config/configuration';
 import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
-import { LoggerMiddleware } from '@irole/microservices';
+import { LoggerMiddleware } from '@samb2/nest-microservice';
 import { EmailModule } from './email/email.module';
 
 @Module({

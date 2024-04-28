@@ -30,7 +30,7 @@ import {
   MongoIdValidationPipe,
   PermissionEnum,
   Permissions,
-} from '@irole/microservices';
+} from '@samb2/nest-microservice';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
 import {

@@ -6,7 +6,7 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { MicroResInterface, PatternEnum } from '@irole/microservices';
+import { MicroResInterface, PatternEnum } from '@samb2/nest-microservice';
 import { DeleteAvatarDto } from './dto/delete-avatar.dto';
 
 @Controller()

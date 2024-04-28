@@ -7,7 +7,7 @@ import {
 } from '@nestjs/microservices';
 import { EmailService } from './email.service';
 import { CreateEmailDto } from './dto/create-email.dto';
-import { MicroResInterface, PatternEnum } from '@irole/microservices';
+import { MicroResInterface, PatternEnum } from '@samb2/nest-microservice';
 
 @Controller()
 export class EmailController {

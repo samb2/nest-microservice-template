@@ -18,8 +18,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { PermissionEnum } from '@irole/microservices';
-import { Permissions } from '@irole/microservices';
+import { PermissionEnum } from '@samb2/nest-microservice';
+import { Permissions } from '@samb2/nest-microservice';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
 import {

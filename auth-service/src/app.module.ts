@@ -8,7 +8,7 @@ import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
-import { LoggerMiddleware } from '@irole/microservices';
+import { LoggerMiddleware } from '@samb2/nest-microservice';
 import { RoleModule } from './role/role.module';
 import { PermissionModule } from './permission/permission.module';
 import { TokenModule } from './token/token.module';

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MicroserviceService } from './microservice.service';
 import { MicroserviceController } from './microservice.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ServiceNameEnum } from '@irole/microservices';
+import { ServiceNameEnum } from '@samb2/nest-microservice';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({

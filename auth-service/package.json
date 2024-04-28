@@ -25,7 +25,7 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
   },
   "dependencies": {
-    "@irole/microservices": "^1.18.0",
+    "@samb2/nest-microservice": "^1.0.0",
     "@nestjs/cache-manager": "^2.1.1",
     "@nestjs/common": "^10.3.3",
     "@nestjs/config": "^3.2.0",

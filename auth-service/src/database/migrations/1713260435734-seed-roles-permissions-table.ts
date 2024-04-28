@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Repository } from 'typeorm';
 import { RoleEnum } from '../../role/enum/role.enum';
-import { PermissionEnum } from '@irole/microservices';
+import { PermissionEnum } from '@samb2/nest-microservice';
 import { redisCommon } from '../redis.module';
 import { Permission } from '../../permission/entities/permission.entity';
 import { Role, RolePermission } from '../../role/entities';

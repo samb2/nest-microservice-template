@@ -3,7 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { MicroResInterface, PatternEnum } from '@irole/microservices';
+import { MicroResInterface, PatternEnum } from '@samb2/nest-microservice';
 import { PageMetaDto } from '../utils/dto/page-meta.dto';
 import {
   FindUsersQueryDto,

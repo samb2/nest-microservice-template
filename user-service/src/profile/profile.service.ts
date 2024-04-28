@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
-import { MicroResInterface, PatternEnum } from '@irole/microservices';
+import { MicroResInterface, PatternEnum } from '@samb2/nest-microservice';
 import * as process from 'node:process';
 import {
   DeleteAvatarResDto,

@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ForgotPasswordEvent, UserRegisteredEvent } from './dto';
 import { EventEnum } from './enum/event.enum';
 import { MicroserviceService } from '../microservice/microservice.service';
-import { PatternEnum } from '@irole/microservices';
+import { PatternEnum } from '@samb2/nest-microservice';
 
 @Injectable()
 export class EventsService implements OnModuleInit {

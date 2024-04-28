@@ -12,7 +12,7 @@ import { MinioModule } from './minio/minio.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './utils/passport/accessToken.strategy';
-import { LoggerMiddleware } from '@irole/microservices';
+import { LoggerMiddleware } from '@samb2/nest-microservice';
 import { RedisHealthIndicator, RedisModule } from './redis';
 import { MicroserviceModule } from './microservice/microservice.module';
 

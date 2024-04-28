@@ -6,7 +6,7 @@ import {
   generateMessage,
   generateResMessage,
   sendMicroMessage,
-} from '@irole/microservices';
+} from '@samb2/nest-microservice';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy, RmqContext } from '@nestjs/microservices';
 import { IMicroservice } from './interface/IMicroservice.interface';

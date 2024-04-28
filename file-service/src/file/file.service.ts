@@ -11,7 +11,7 @@ import { FileRepository } from './file.repository';
 import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket } from '../minio/schemas/bucket.schema';
 import { File } from './schemas/file.schema';
-import { MicroResInterface, PatternEnum } from '@irole/microservices';
+import { MicroResInterface, PatternEnum } from '@samb2/nest-microservice';
 import { InjectConnection } from '@nestjs/mongoose';
 import { ClientSession, Connection } from 'mongoose';
 import { BucketEnum } from '../minio/enum/bucket.enum';

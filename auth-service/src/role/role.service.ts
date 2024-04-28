@@ -9,7 +9,6 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Not, QueryRunner, Repository } from 'typeorm';
 import { Permission } from '../permission/entities/permission.entity';
 import { createTransaction } from '../utils/create-transaction.util';
-import { PermissionEnum } from '@irole/microservices';
 import { PageMetaDto } from '../utils/dto/page-meta.dto';
 import { Role, RolePermission } from './entities';
 import { User, UsersRoles } from '../auth/entities';
@@ -22,6 +21,7 @@ import {
   UpdateRoleDto,
 } from './dto';
 import { RedisCommonService } from '../redis';
+import { PermissionEnum } from "@samb2/nest-microservice";
 
 @Injectable()
 export class RoleService {

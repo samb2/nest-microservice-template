@@ -17,7 +17,7 @@ import {
   JwtRefreshPayload,
   MicroResInterface,
   PatternEnum,
-} from '@irole/microservices';
+} from '@samb2/nest-microservice';
 import { RoleEnum } from '../role/enum/role.enum';
 import { TokenService } from '../token/token.service';
 import { TokenTypeEnum } from '../token/enum/token-type.enum';

@@ -7,7 +7,7 @@ import {
   generateResMessage,
   sendMicroMessageWithTimeOut,
   sendMicroMessage,
-} from '@irole/microservices';
+} from '@samb2/nest-microservice';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ClientProxy, RmqContext } from '@nestjs/microservices';
 import { User } from '../auth/entities';

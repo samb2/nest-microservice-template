@@ -1,4 +1,4 @@
-import { ServiceNameEnum } from '@irole/microservices';
+import { ServiceNameEnum } from '@samb2/nest-microservice';
 
 export class UpdateUserPasswordDto {
   from: ServiceNameEnum;

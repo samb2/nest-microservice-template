@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Repository } from 'typeorm';
 import { Permission } from '../../permission/entities/permission.entity';
-import { PermissionEnum } from '@irole/microservices';
+import { PermissionEnum } from '@samb2/nest-microservice';
 
 export class SeedPermissionsTable1713260206148 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

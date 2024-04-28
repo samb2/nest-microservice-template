@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { JwtRefreshPayload } from '@irole/microservices';
 import { TokenTypeEnum } from './enum/token-type.enum';
+import { JwtRefreshPayload } from "@samb2/nest-microservice";
 
 @Injectable()
 export class TokenService {
