@@ -18,7 +18,7 @@ services:
       redis-common:
         condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
 
   email-service:
     build:
@@ -32,7 +32,7 @@ services:
       - email_network
     depends_on:
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
 
 
   file-service:
