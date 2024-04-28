@@ -1,21 +1,57 @@
 services:
-#  file-service:
-#    build:
-#      context: ./file-service
-#    environment:
-#      NODE_ENV: production
-#    container_name: file-service
-#    ports:
-#      - "4000:4000"
-#    networks:
-#      - file_network
-#    depends_on:
-#      mongo-file:
-#        condition: service_healthy
-#      redis-common:
-#        condition: service_healthy
-#      rabbitmq:
-#        condition: service_healthy
+
+  auth-service:
+    build:
+      context: ./auth-service
+    environment:
+      NODE_ENV: production
+    container_name: auth-service
+    ports:
+      - "3000:3000"
+    networks:
+      - auth_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-auth:
+        condition: service_healthy
+      redis-common:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+
+  email-service:
+    build:
+      context: ./email-service
+    environment:
+      NODE_ENV: production
+    container_name: email-service
+    ports:
+      - "1000:1000"
+    networks:
+      - email_network
+    depends_on:
+      rabbitmq:
+        condition: service_started
+
+
+  file-service:
+    build:
+      context: ./file-service
+    environment:
+      NODE_ENV: production
+    container_name: file-service
+    ports:
+      - "4000:4000"
+    networks:
+      - file_network
+    depends_on:
+      mongo-file:
+        condition: service_healthy
+      redis-common:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   user-service:
     build:
@@ -34,26 +70,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-
-#  auth-service:
-#    build:
-#      context: ./auth-service
-#    environment:
-#      NODE_ENV: production
-#    container_name: auth-service
-#    ports:
-#      - "3000:3000"
-#    networks:
-#      - auth_network
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#      redis-auth:
-#        condition: service_healthy
-#      redis-common:
-#        condition: service_healthy
-#      rabbitmq:
-#        condition: service_started
 
   postgres:
     image: postgres
@@ -184,6 +200,7 @@ services:
       - file_network
       - auth_network
       - user_network
+      - email_network
 
   pgadmin:
     image: dpage/pgadmin4
@@ -215,6 +232,7 @@ services:
       - auth_network
       - user_network
       - file_network
+      - email_network
 
 volumes:
   portainer:
@@ -232,6 +250,8 @@ networks:
   auth_network:
     driver: bridge
   user_network:
+    driver: bridge
+  email_network:
     driver: bridge
 
 
