@@ -57,7 +57,7 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Post('forgotPassword')
+  @Post('forgot-password')
   @ApiOkResponseSuccess(ForgotPasswordResDto)
   @ApiBadRequestResponse({ description: 'Bad Request!' })
   @ApiUnauthorizedResponse({ description: 'username or password is wrong!' })
@@ -67,7 +67,7 @@ export class AuthController {
     return this.authService.forgotPassword(forgotPasswordDto);
   }
 
-  @Post('resetPassword')
+  @Post('reset-password')
   @ApiOkResponseSuccess(ResetPasswordResDto)
   @ApiBadRequestResponse({ description: 'Bad Request!' })
   @ApiForbiddenResponse({ description: 'This Token Expired' })
