@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
+import { RedisKeyEnum } from '@samb2/nest-microservice';
 
 @Injectable()
 export class RedisAuthService {
@@ -28,5 +29,9 @@ export class RedisAuthService {
 
   async ping(): Promise<'PONG'> {
     return this.redisAuth.ping();
+  }
+
+  generateRefreshKey(value: string): string {
+    return `${RedisKeyEnum.REFRESH}-${value}`;
   }
 }

@@ -3,6 +3,7 @@ import { BucketRepository } from './bucket.repository';
 import { Bucket } from './schemas/bucket.schema';
 import { Client } from 'minio';
 import { ConfigService } from '@nestjs/config';
+import { BucketEnum } from './enum/bucket.enum';
 
 @Injectable()
 export class MinioService {
@@ -22,7 +23,7 @@ export class MinioService {
   }
 
   async insertFile(
-    bucketName: string,
+    bucketName: BucketEnum,
     buketKey: string,
     file: any,
     metaData: any,
@@ -49,7 +50,7 @@ export class MinioService {
     );
   }
 
-  async createBucketIfNotExist(bucketName: string): Promise<boolean> {
+  async createBucketIfNotExist(bucketName: BucketEnum): Promise<boolean> {
     const bucketExist: boolean =
       await this.minioService.bucketExists(bucketName);
     if (bucketExist) {
@@ -57,6 +58,7 @@ export class MinioService {
     }
     if (!bucketExist) {
       await this.minioService.makeBucket(bucketName);
+      return true;
     }
   }
 }

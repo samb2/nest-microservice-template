@@ -6,9 +6,9 @@ import {
 import { MicroResInterface, PatternEnum } from '@samb2/nest-microservice';
 import { PageMetaDto } from '../utils/dto/page-meta.dto';
 import {
-  FindUsersQueryDto,
   GetAllUsersResDto,
   GetUserResDto,
+  GetUsersQueryDto,
   UpdateUserDto,
   UpdateUserResDto,
 } from './dto';
@@ -22,10 +22,12 @@ export class UserService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  async findAll(findUsersDto?: FindUsersQueryDto): Promise<GetAllUsersResDto> {
+  async findAll(
+    getUsersQueryDto?: GetUsersQueryDto,
+  ): Promise<GetAllUsersResDto> {
     // Destructure query parameters or set default values if not provided
     const { is_active, admin, is_delete, sort, sortField, take, skip } =
-      findUsersDto;
+      getUsersQueryDto;
 
     // Initialize whereConditions object to build the WHERE clause for filtering
     const whereConditions: any = {
@@ -65,7 +67,7 @@ export class UserService {
     });
     // Generate pagination metadata
     const pageMeta: PageMetaDto = new PageMetaDto({
-      metaData: findUsersDto,
+      metaData: getUsersQueryDto,
       itemCount,
     });
 

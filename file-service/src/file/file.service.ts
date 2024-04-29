@@ -87,7 +87,7 @@ export class FileService {
 
       // Save file to Minio storage
       await this.minioService.insertFile(
-        bucket.name,
+        BucketEnum.AVATAR,
         bucketKey,
         image.buffer,
         metaData,
@@ -168,7 +168,6 @@ export class FileService {
         // send to user service
         const payload = {
           authId: file.uploadedBy,
-          avatar: `${file.key}`,
         };
         const result: MicroResInterface =
           await this.microserviceService.sendToUserService(

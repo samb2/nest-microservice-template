@@ -21,7 +21,7 @@ import {
   UpdateRoleDto,
 } from './dto';
 import { RedisCommonService } from '../redis';
-import { PermissionEnum } from "@samb2/nest-microservice";
+import { PermissionEnum } from '@samb2/nest-microservice';
 
 @Injectable()
 export class RoleService {
@@ -97,8 +97,11 @@ export class RoleService {
           (permission) => permission.access,
         );
 
+        const key: string = this.redisCommonService.generateRoleKey(
+          role.id.toString(),
+        );
         await this.redisCommonService.set(
-          `role-${role.id.toString()}`,
+          key,
           JSON.stringify(redisPermissions),
         );
       }
@@ -225,7 +228,10 @@ export class RoleService {
       if (permissionIds && permissionIds.length > 0) {
         // Remove existing role permissions
         await rolePermissionRep.delete({ role: { id } });
-        await this.redisCommonService.del(`role-${role.id.toString()}`);
+        const key: string = this.redisCommonService.generateRoleKey(
+          role.id.toString(),
+        );
+        await this.redisCommonService.del(key);
 
         // Find duplicates in the rolePermissions array
         this._checkDuplicatesPermissionsIds(permissionIds);
@@ -237,7 +243,6 @@ export class RoleService {
         // Create new RolePermission associations
         role.rolePermissions = permissions.map((permission) => {
           return rolePermissionRep.create({
-            //role: { id: role.id },
             permission,
           });
         });
@@ -245,8 +250,9 @@ export class RoleService {
         const redisPermissions: PermissionEnum[] = permissions.map(
           (permission) => permission.access,
         );
+
         await this.redisCommonService.set(
-          `role-${role.id.toString()}`,
+          key,
           JSON.stringify(redisPermissions),
         );
       }
@@ -288,7 +294,10 @@ export class RoleService {
       await roleRep.delete({ id });
 
       // Delete role from Redis Common
-      await this.redisCommonService.del(`role-${role.id.toString()}`);
+      const key: string = this.redisCommonService.generateRoleKey(
+        role.id.toString(),
+      );
+      await this.redisCommonService.del(key);
 
       // Commit the transaction
       await queryRunner.commitTransaction();

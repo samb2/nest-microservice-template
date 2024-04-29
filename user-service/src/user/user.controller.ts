@@ -18,14 +18,13 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { PermissionEnum } from '@samb2/nest-microservice';
-import { Permissions } from '@samb2/nest-microservice';
+import { PermissionEnum, Permissions } from '@samb2/nest-microservice';
 import { ApiOkResponseSuccess } from '../utils/ApiOkResponseSuccess.util';
 import { AccessTokenGuard, PermissionGuard } from '../utils/guard';
 import {
-  FindUsersQueryDto,
   GetAllUsersResDto,
   GetUserResDto,
+  GetUsersQueryDto,
   UpdateUserDto,
   UpdateUserResDto,
 } from './dto';
@@ -47,9 +46,9 @@ export class UserController {
   @ApiQuery({ name: 'is_active', required: false, type: Boolean })
   @ApiQuery({ name: 'admin', required: false, type: Boolean })
   findAll(
-    @Query() findUsersDto?: FindUsersQueryDto,
+    @Query() getUsersQueryDto?: GetUsersQueryDto,
   ): Promise<GetAllUsersResDto> {
-    return this.userService.findAll(findUsersDto);
+    return this.userService.findAll(getUsersQueryDto);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)

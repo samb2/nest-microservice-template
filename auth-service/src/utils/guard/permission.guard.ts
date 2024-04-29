@@ -36,9 +36,12 @@ export class PermissionGuard implements CanActivate {
     }
 
     // Retrieve permissions from Redis for each role asynchronously
-    const promises: Promise<string>[] = req.roles.map((role) =>
-      this.redisCommonService.get(`role-${role.toString()}`),
-    );
+    const promises: Promise<string>[] = req.roles.map((role) => {
+      const key: string = this.redisCommonService.generateRoleKey(
+        role.toString(),
+      );
+      return this.redisCommonService.get(key);
+    });
     const redisPermissions: string[] = await Promise.all(promises);
     // Parse Redis permissions and add them to the userPermissions array
     const permissions: any[] = redisPermissions.map((redisPermission) =>

@@ -10,11 +10,11 @@ export class GetFileQueryDto {
   readonly sort?: SortEnum = SortEnum.ASC;
 
   @ApiPropertyOptional({
-    enum: ['id', 'name', 'uploadedAt'],
-    default: 'id',
+    enum: ['id', 'name', 'uploadedAt', 'size', 'bucket'],
+    default: 'uploadedAt',
   })
   @IsOptional()
-  readonly sortField?: 'id' | 'name' | 'uploadedAt';
+  readonly sortField?: 'id' | 'name' | 'uploadedAt' | 'size' | 'bucket';
 
   @ApiPropertyOptional({
     minimum: 1,

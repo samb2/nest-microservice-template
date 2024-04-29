@@ -185,7 +185,8 @@ export class AuthService implements IAuthServiceInterface {
       );
 
       // Save Refresh Token In Cache
-      await this.redisAuthService.set(`REFRESH-${user.id}`, refresh_token);
+      const key: string = this.redisAuthService.generateRefreshKey(user.id);
+      await this.redisAuthService.set(key, refresh_token);
 
       // Return user details and tokens
       return { user, access_token, refresh_token };

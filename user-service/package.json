@@ -31,7 +31,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "@samb2/nest-microservice": "^1.0.0",
+    "@samb2/nest-microservice": "^1.1.0",
     "@nestjs/cache-manager": "^2.1.1",
     "@nestjs/common": "^10.3.3",
     "@nestjs/config": "^3.2.0",
@@ -45,7 +45,6 @@
     "@nestjs/terminus": "^10.2.0",
     "@nestjs/throttler": "^5.0.1",
     "@prisma/client": "^5.12.1",
-    "@types/compression": "^1.7.5",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.3",
     "bcrypt": "^5.1.1",
@@ -71,6 +70,7 @@
     "@nestjs/testing": "^10.2.10",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^4.17.21",
+    "@types/compression": "^1.7.5",
     "@types/jest": "^29.5.10",
     "@types/node": "^20.10.2",
     "@types/passport-jwt": "^3.0.13",
