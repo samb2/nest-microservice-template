@@ -107,7 +107,7 @@ npm run start:dev
 
 ### Docker
 
-If you prefer to run the application in Docker, you can use the provided `docker-compose.yml` file:
+If you prefer to run the application in Docker, you can use the provided `compose.yml` file:
 
 ```
 docker-compose up
