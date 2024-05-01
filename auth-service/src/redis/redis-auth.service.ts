@@ -1,33 +1,50 @@
 import { Inject, Injectable } from '@nestjs/common';
-import Redis from 'ioredis';
 import { RedisKeyEnum } from '@samb2/nest-microservice';
+import Redis, { RedisKey } from 'ioredis';
+import { IRedisAuthServiceInterface } from './interface/IRedisAuthService.interface';
 
 @Injectable()
-export class RedisAuthService {
+export class RedisAuthService implements IRedisAuthServiceInterface {
   constructor(@Inject('RedisAuth') private readonly redisAuth: Redis) {}
 
-  async get(key: string): Promise<string> {
+  async get(key: RedisKey): Promise<string | null> {
     return this.redisAuth.get(key);
   }
 
-  async set(key: string, value: string): Promise<'OK'> {
-    return this.redisAuth.set(key, value);
+  async set(key: RedisKey, value: string | number | Buffer): Promise<void> {
+    await this.redisAuth.set(key, value);
   }
 
-  async del(key: string): Promise<number> {
+  async del(key: RedisKey): Promise<number> {
     return this.redisAuth.del(key);
   }
 
   // Other Redis operations
-  async hset(key: string, field: string, value: string): Promise<number> {
+  async hSet(
+    key: RedisKey,
+    field: string | Buffer | number,
+    value: string | Buffer | number,
+  ): Promise<number> {
     return this.redisAuth.hset(key, field, value);
   }
 
-  async hget(key: string, field: string): Promise<string | null> {
+  async hGet(key: RedisKey, field: string | Buffer): Promise<string | null> {
     return this.redisAuth.hget(key, field);
   }
 
-  async ping(): Promise<'PONG'> {
+  async setEx(
+    key: RedisKey,
+    second: string | number,
+    value: string | number | Buffer,
+  ): Promise<void> {
+    await this.redisAuth.setex(key, second, value);
+  }
+
+  async getEx(key: RedisKey): Promise<string | null> {
+    return this.redisAuth.getex(key);
+  }
+
+  async ping(): Promise<string> {
     return this.redisAuth.ping();
   }
 
