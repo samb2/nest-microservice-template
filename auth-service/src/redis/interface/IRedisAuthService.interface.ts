@@ -3,9 +3,13 @@ import { RedisKey } from 'ioredis';
 export interface IRedisAuthServiceInterface {
   get(key: RedisKey): Promise<string | null>;
 
-  set(key: RedisKey, value: string | number | Buffer): Promise<void>;
+  set(
+    key: RedisKey,
+    value: string | number | Buffer,
+    expiration?: number,
+  ): Promise<void>;
 
-  del(key: RedisKey): Promise<number>;
+  delete(key: RedisKey): Promise<number>;
 
   hSet(
     key: RedisKey,

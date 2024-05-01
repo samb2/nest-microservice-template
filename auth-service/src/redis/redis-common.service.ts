@@ -11,11 +11,18 @@ export class RedisCommonService implements IRedisCommonServiceInterface {
     return this.redisClient.get(key);
   }
 
-  async set(key: RedisKey, value: string | number | Buffer): Promise<void> {
+  async set(
+    key: RedisKey,
+    value: string | number | Buffer,
+    expiration?: number,
+  ): Promise<void> {
+    if (expiration) {
+      await this.redisClient.set(key, value, 'EX', expiration);
+    }
     await this.redisClient.set(key, value);
   }
 
-  async del(key: RedisKey): Promise<number> {
+  async delete(key: RedisKey): Promise<number> {
     return this.redisClient.del(key);
   }
 

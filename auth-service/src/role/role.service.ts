@@ -231,7 +231,7 @@ export class RoleService {
         const key: string = this.redisCommonService.generateRoleKey(
           role.id.toString(),
         );
-        await this.redisCommonService.del(key);
+        await this.redisCommonService.delete(key);
 
         // Find duplicates in the rolePermissions array
         this._checkDuplicatesPermissionsIds(permissionIds);
@@ -297,7 +297,7 @@ export class RoleService {
       const key: string = this.redisCommonService.generateRoleKey(
         role.id.toString(),
       );
-      await this.redisCommonService.del(key);
+      await this.redisCommonService.delete(key);
 
       // Commit the transaction
       await queryRunner.commitTransaction();
