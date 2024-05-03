@@ -34,7 +34,6 @@ services:
       rabbitmq:
         condition: service_healthy
 
-
   file-service:
     build:
       context: ./file-service
@@ -180,7 +179,7 @@ services:
       - user_network
 
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:3-management-alpine
     ports:
       - "5672:5672"
       - "15672:15672"
