@@ -43,6 +43,7 @@ import {
 @ApiTags('files')
 @Controller('files')
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized.' })
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
@@ -75,7 +76,6 @@ export class FileController {
   @Get()
   @ApiOperation({ summary: 'Find all files' })
   @ApiOkResponseSuccess(UploadFileResDto, 200, true)
-  @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
   findAll(@Query() getFileDto?: GetFileQueryDto): Promise<File[]> {
     return this.fileService.findAll(getFileDto);
   }

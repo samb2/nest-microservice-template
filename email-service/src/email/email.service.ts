@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CreateEmailDto } from './dto/create-email.dto';
 import { RmqContext } from '@nestjs/microservices';
-import { generateResMessage, MicroResInterface } from '@samb2/nest-microservice';
+import {
+  generateResMessage,
+  MicroResInterface,
+} from '@samb2/nest-microservice';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import { SentMessageInfo, Transporter } from 'nodemailer';

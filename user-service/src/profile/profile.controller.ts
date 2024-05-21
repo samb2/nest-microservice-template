@@ -34,6 +34,7 @@ import {
 
 @ApiTags('profile')
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
@@ -43,7 +44,6 @@ export class ProfileController {
   @Get()
   @ApiOperation({ summary: 'Find one profile' })
   @ApiOkResponseSuccess(GetProfileResDto)
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @UseInterceptors(ClassSerializerInterceptor)
   findOne(@Req() req: any): Promise<User> {
     return this.profileService.findOne(req.user);
@@ -56,7 +56,6 @@ export class ProfileController {
   @ApiBody({ type: UpdateProfileDto })
   @ApiOkResponseSuccess(UpdateProfileResDto)
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   update(
     @Body() updateProfileDto: UpdateProfileDto,
     @Req() req: any,
@@ -71,7 +70,6 @@ export class ProfileController {
   @ApiBody({ type: UpdatePasswordDto })
   @ApiOkResponseSuccess(UpdatePasswordResDto)
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiInternalServerErrorResponse({
     description: 'Your old password is incorrect',
   })
@@ -87,7 +85,6 @@ export class ProfileController {
   @Delete('/avatar')
   @ApiOperation({ summary: 'Delete avatar' })
   @ApiOkResponseSuccess(DeleteAvatarResDto)
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiInternalServerErrorResponse()
   deleteAvatar(@Req() req: any): Promise<DeleteAvatarResDto> {
     return this.profileService.deleteAvatar(req.user.id, req.user.avatar);

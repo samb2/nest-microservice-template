@@ -31,6 +31,7 @@ import {
 
 @ApiTags('users')
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -41,7 +42,6 @@ export class UserController {
   @ApiOperation({ summary: 'Get all users' })
   @ApiOkResponseSuccess(GetAllUsersResDto)
   @ApiBadRequestResponse({ description: 'Bad Request!' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiQuery({ name: 'is_delete', required: false, type: Boolean })
   @ApiQuery({ name: 'is_active', required: false, type: Boolean })
   @ApiQuery({ name: 'admin', required: false, type: Boolean })
@@ -57,7 +57,6 @@ export class UserController {
   @ApiOperation({ summary: 'Get a user info' })
   @ApiOkResponseSuccess(GetUserResDto)
   @ApiBadRequestResponse({ description: 'Bad Request!' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiNotFoundResponse({ description: 'User not found!' })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<GetUserResDto> {
     return this.userService.findOne(id);
@@ -69,7 +68,6 @@ export class UserController {
   @ApiOperation({ summary: 'Update a user' })
   @ApiOkResponseSuccess(UpdateUserResDto)
   @ApiBadRequestResponse({ description: 'Bad Request!' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiNotFoundResponse({ description: 'User not found!' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
