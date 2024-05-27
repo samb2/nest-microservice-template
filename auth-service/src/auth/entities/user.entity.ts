@@ -5,6 +5,7 @@ import {
   OneToMany,
   BeforeInsert,
   UpdateDateColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { ResetPassword } from './reset-password.entity';
@@ -38,17 +39,12 @@ export class User {
   @Exclude()
   admin: boolean;
 
-  @Column({
-    name: 'created_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 
   @UpdateDateColumn({
     name: 'updated_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
+    type: 'timestamptz',
   })
   updatedAt: Date;
 
