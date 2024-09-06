@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TokenTypeEnum } from './enum/token-type.enum';
-import { JwtRefreshPayload } from "@samb2/nest-microservice";
+import { JwtRefreshPayload } from '@samb2/nest-microservice';
 
 @Injectable()
 export class TokenService {
@@ -33,7 +33,7 @@ export class TokenService {
     return this.jwtService.sign(payload, { secret: secretKey, expiresIn });
   }
 
-  public verify(token: string, secret: string): any {
-    return this.jwtService.verify(token, { secret });
+  public verify<T extends object>(token: string, secret: string): T {
+    return this.jwtService.verify<T>(token, { secret });
   }
 }

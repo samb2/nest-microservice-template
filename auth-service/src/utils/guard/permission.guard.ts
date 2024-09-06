@@ -43,18 +43,16 @@ export class PermissionGuard implements CanActivate {
       return this.redisCommonService.get(key);
     });
     const redisPermissions: string[] = await Promise.all(promises);
+
     // Parse Redis permissions and add them to the userPermissions array
-    const permissions: any[] = redisPermissions.map((redisPermission) =>
-      JSON.parse(redisPermission),
-    );
-    const userPermissions: string[] = permissions.flat();
+    const permissions: string[] = redisPermissions
+      .map((redisPermission: string) => JSON.parse(redisPermission))
+      .flat();
 
     // Extract the access name from the permission and check for manage permission
     const accessName: string = permission.split('_')[1];
     const manage: string = `manage_${accessName}`;
     // Allow access if the user has the manage permission or the specific permission
-    return (
-      userPermissions.includes(manage) || userPermissions.includes(permission)
-    );
+    return permissions.includes(manage) || permissions.includes(permission);
   }
 }

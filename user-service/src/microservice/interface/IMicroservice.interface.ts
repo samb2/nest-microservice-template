@@ -3,11 +3,11 @@ import { MicroResInterface, PatternEnum } from '@samb2/nest-microservice';
 export interface IMicroservice {
   sendToAuthService(
     pattern: PatternEnum,
-    payload: any,
+    payload: object,
   ): Promise<MicroResInterface>;
 
   sendToFileService(
     pattern: PatternEnum,
-    payload: any,
+    payload: object,
   ): Promise<MicroResInterface>;
 }

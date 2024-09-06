@@ -102,7 +102,7 @@ export class AuthService implements IAuthServiceInterface {
       await usersRolesRep.save(usersRoles);
 
       // Send a message to the user service about the new user registration
-      const payload = {
+      const payload: object = {
         authId: user.id,
         email: user.email,
       };
@@ -324,7 +324,8 @@ export class AuthService implements IAuthServiceInterface {
   public async logout(user: User): Promise<LogoutResDto> {
     try {
       // Set the refresh token in Redis to an empty string to invalidate it
-      await this.redisAuthService.set(`REFRESH-${user.id}`, '');
+      const key: string = this.redisAuthService.generateRefreshKey(user.id);
+      await this.redisAuthService.set(key, '');
 
       // Return success message
       return { message: 'Logout Successfully' };

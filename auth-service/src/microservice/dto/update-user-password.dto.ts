@@ -7,7 +7,7 @@ export class UpdateUserPasswordDto {
   ttl: number;
 }
 
-class PayloadInfo {
+export class PayloadInfo {
   oldPassword: string;
   newPassword: string;
   authId: string;

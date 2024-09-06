@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { UserService } from '../../user/user.service';
 import { User } from '../../user/entities/user.entity';
 import { JwtAccessPayload } from '@samb2/nest-microservice';
+import { RequestWithUser } from '../../profile/interface/request-with-user.interface';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(
@@ -23,7 +24,10 @@ export class AccessTokenStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: any, payload: JwtAccessPayload): Promise<any> {
+  async validate(
+    req: RequestWithUser,
+    payload: JwtAccessPayload,
+  ): Promise<any> {
     const user: User = await this.userService.validateUserByAuthId(
       payload.authId,
     );

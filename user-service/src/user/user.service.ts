@@ -26,7 +26,7 @@ export class UserService {
     getUsersQueryDto?: GetUsersQueryDto,
   ): Promise<GetAllUsersResDto> {
     // Destructure query parameters or set default values if not provided
-    const { is_active, admin, is_delete, sort, sortField, take, skip } =
+    const { is_active, admin, is_delete, sort, sortField, take, skip, page } =
       getUsersQueryDto;
 
     // Initialize whereConditions object to build the WHERE clause for filtering
@@ -66,10 +66,7 @@ export class UserService {
       where: whereConditions,
     });
     // Generate pagination metadata
-    const pageMeta: PageMetaDto = new PageMetaDto({
-      metaData: getUsersQueryDto,
-      itemCount,
-    });
+    const pageMeta: PageMetaDto = new PageMetaDto(page, take, itemCount);
 
     return { users, pageMeta };
   }

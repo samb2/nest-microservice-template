@@ -31,6 +31,8 @@ import {
   ResetPasswordResDto,
 } from './dto';
 import { AccessTokenGuard, RefreshTokenGuard } from '../utils/guard';
+import { RequestWithUserRefresh } from '@samb2/nest-microservice';
+import { RequestWithUser } from './interfaces/request-with-user.interface';
 
 @ApiTags('auth service')
 @Controller('auth')
@@ -82,7 +84,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOkResponseSuccess(RefreshResDto)
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  refresh(@Req() req: any): RefreshResDto {
+  refresh(@Req() req: RequestWithUserRefresh): RefreshResDto {
     return this.authService.refresh(req.user);
   }
 
@@ -91,7 +93,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOkResponseSuccess(RefreshResDto)
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  async logout(@Req() req: any): Promise<LogoutResDto> {
+  async logout(@Req() req: RequestWithUser): Promise<LogoutResDto> {
     return this.authService.logout(req.user);
   }
 }

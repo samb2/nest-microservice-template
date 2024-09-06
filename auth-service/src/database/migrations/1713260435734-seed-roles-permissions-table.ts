@@ -1,18 +1,25 @@
 import { MigrationInterface, QueryRunner, Repository } from 'typeorm';
 import { RoleEnum } from '../../role/enum/role.enum';
 import { PermissionEnum, RedisKeyEnum } from '@samb2/nest-microservice';
-import { redisCommon } from '../redis.module';
 import { Permission } from '../../permission/entities/permission.entity';
 import { Role, RolePermission } from '../../role/entities';
+import Redis from 'ioredis';
 
 export class SeedRolesPermissionsTable1713260435734
   implements MigrationInterface
 {
-  redisClient: any;
+  redisInstance: Redis;
 
   constructor() {
-    const { useFactory } = redisCommon;
-    this.redisClient = useFactory();
+    this.redisInstance = new Redis({
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+      password: process.env.REDIS_PASSWORD,
+    });
+
+    this.redisInstance.on('error', (e) => {
+      throw new Error(`Redis connection failed: ${e}`);
+    });
   }
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -26,8 +33,8 @@ export class SeedRolesPermissionsTable1713260435734
 
     try {
       const rolePermissions: RolePermission[] = [];
-      const redisAdminPermissions: any[] = [];
-      const redisUserPermissions: any[] = [];
+      const redisAdminPermissions: string[] = [];
+      const redisUserPermissions: string[] = [];
       let redisAdminKey: string;
       let redisUserKey: string;
       let redisSuperAdminKey: string;
@@ -93,12 +100,12 @@ export class SeedRolesPermissionsTable1713260435734
       }
       await rolePermissionRep.save(rolePermissions);
       // Redis
-      await this.redisClient.set(redisSuperAdminKey, JSON.stringify([]));
-      await this.redisClient.set(
+      await this.redisInstance.set(redisSuperAdminKey, JSON.stringify([]));
+      await this.redisInstance.set(
         redisAdminKey,
         JSON.stringify(redisAdminPermissions),
       );
-      await this.redisClient.set(
+      await this.redisInstance.set(
         redisUserKey,
         JSON.stringify(redisUserPermissions),
       );
@@ -115,6 +122,6 @@ export class SeedRolesPermissionsTable1713260435734
       queryRunner.manager.getRepository(RolePermission);
     await rolePermissionRep.clear();
     // Redis
-    await this.redisClient.flushall();
+    await this.redisInstance.flushall();
   }
 }

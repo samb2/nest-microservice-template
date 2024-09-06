@@ -215,7 +215,7 @@ export class MicroserviceService implements IMicroservice {
 
   sendToAuthService(
     pattern: PatternEnum,
-    payload: any,
+    payload: object,
   ): Promise<MicroResInterface> {
     const message: MicroSendInterface = generateMessage(
       ServiceNameEnum.USER,
@@ -228,7 +228,7 @@ export class MicroserviceService implements IMicroservice {
 
   async sendToFileService(
     pattern: PatternEnum,
-    payload: any,
+    payload: object,
   ): Promise<MicroResInterface> {
     const message: MicroSendInterface = generateMessage(
       ServiceNameEnum.USER,

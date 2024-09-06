@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { BucketRepository } from './bucket.repository';
 import { Bucket } from './schemas/bucket.schema';
-import { Client } from 'minio';
+import { Client, ItemBucketMetadata } from 'minio';
 import { ConfigService } from '@nestjs/config';
 import { BucketEnum } from './enum/bucket.enum';
+import stream from 'node:stream';
 
 @Injectable()
 export class MinioService {
@@ -25,11 +26,18 @@ export class MinioService {
   async insertFile(
     bucketName: BucketEnum,
     buketKey: string,
-    file: any,
-    metaData: any,
+    file: stream.Readable | Buffer | string,
+    size: number,
+    metaData?: ItemBucketMetadata,
   ): Promise<void> {
     try {
-      this.minioService.putObject(bucketName, buketKey, file, metaData);
+      await this.minioService.putObject(
+        bucketName,
+        buketKey,
+        file,
+        size,
+        metaData,
+      );
     } catch (e) {
       throw e;
     }

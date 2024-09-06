@@ -1,10 +1,9 @@
 import * as request from 'supertest';
 import {
-  forgotPasswordEmailNotRegister,
   forgotPasswordEmptyEmail,
   forgotPasswordInvalidEmail,
 } from '../constants/ForgotPasswordData';
-import { ResetPassword } from '../../src/auth/entities/reset-password.entity';
+import { ResetPassword } from "../../src/auth/entities";
 import authTestController from './controllers/AuthTestController';
 
 beforeEach(async () => {});

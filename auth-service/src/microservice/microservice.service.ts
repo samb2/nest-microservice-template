@@ -27,7 +27,7 @@ export class MicroserviceService implements IMicroservice {
 
   public async sendToUserService(
     pattern: PatternEnum,
-    payload: any,
+    payload: object,
     timeOut: string | number,
   ): Promise<MicroResInterface> {
     const message: MicroSendInterface = generateMessage(
@@ -46,7 +46,7 @@ export class MicroserviceService implements IMicroservice {
 
   public async sendToEmailService(
     pattern: PatternEnum,
-    payload: any,
+    payload: object,
     timeOut?: string | number,
   ): Promise<MicroResInterface> {
     const message: MicroSendInterface = generateMessage(

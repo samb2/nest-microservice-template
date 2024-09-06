@@ -11,12 +11,13 @@ import { FileRepository } from './file.repository';
 import { BucketRepository } from '../minio/bucket.repository';
 import { Bucket } from '../minio/schemas/bucket.schema';
 import { File } from './schemas/file.schema';
-import { MicroResInterface, PatternEnum } from '@samb2/nest-microservice';
+import { MicroResInterface, PatternEnum, User } from '@samb2/nest-microservice';
 import { InjectConnection } from '@nestjs/mongoose';
-import { ClientSession, Connection } from 'mongoose';
+import { ClientSession, Connection, Types } from 'mongoose';
 import { BucketEnum } from '../minio/enum/bucket.enum';
 import { DeleteFileResDto, GetFileQueryDto } from './dto';
 import { MicroserviceService } from '../microservice/microservice.service';
+import { PaginateResponseInterface } from '../database/interfaces/paginate-response.interface';
 
 @Injectable()
 export class FileService {
@@ -28,7 +29,7 @@ export class FileService {
     private readonly microserviceService: MicroserviceService,
   ) {}
 
-  async uploadAvatar(image: any, user: any): Promise<File> {
+  async uploadAvatar(image: Express.Multer.File, user: User): Promise<File> {
     // Generate metadata for the file
     const metaData: object = {
       'content-type': image.mimetype,
@@ -90,6 +91,7 @@ export class FileService {
         BucketEnum.AVATAR,
         bucketKey,
         image.buffer,
+        image.size,
         metaData,
       );
 
@@ -120,7 +122,9 @@ export class FileService {
     }
   }
 
-  async findAll(getFileDto: GetFileQueryDto): Promise<File[]> {
+  async findAll(
+    getFileDto: GetFileQueryDto,
+  ): Promise<PaginateResponseInterface<File[]>> {
     // Destructure query parameters
     const { sortField, take, page } = getFileDto;
 
@@ -144,11 +148,11 @@ export class FileService {
     );
   }
 
-  async findOne(id: string): Promise<File> {
+  async findOne(id: Types.ObjectId): Promise<File> {
     return this._findById(id);
   }
 
-  async remove(id: any): Promise<DeleteFileResDto> {
+  async remove(id: Types.ObjectId): Promise<DeleteFileResDto> {
     // Start a database transaction
     const session: ClientSession = await this.connection.startSession();
     session.startTransaction();
@@ -197,7 +201,7 @@ export class FileService {
     }
   }
 
-  async _findById(id: any): Promise<File> {
+  async _findById(id: Types.ObjectId): Promise<File> {
     const file: File = await this.fileRepo.findById(
       id,
       { key: true, name: true, path: true, bucket: true, uploadedBy: true },

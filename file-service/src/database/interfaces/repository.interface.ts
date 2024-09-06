@@ -13,6 +13,7 @@ import {
 } from 'mongoose';
 import { ICache } from './cache.interface';
 import { PaginationOptions } from './pagination.interface';
+import { PaginateResponseInterface } from './paginate-response.interface';
 
 export interface IRepository<T extends Document> {
   find(
@@ -34,14 +35,14 @@ export interface IRepository<T extends Document> {
     projection?: ProjectionType<T> | null,
     options?: QueryOptions<T> | null,
     cache?: ICache | undefined,
-  ): Promise<any>;
+  ): Promise<T>;
 
   paginate(
     where?: FilterQuery<T>,
     projection?: ProjectionType<T> | null,
     options?: PaginationOptions,
     cache?: ICache | undefined,
-  ): Promise<T>;
+  ): Promise<PaginateResponseInterface<T[]>>;
 
   update(
     where?: FilterQuery<T>,

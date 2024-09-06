@@ -12,6 +12,7 @@ import {
   MongooseUpdateQueryOptions,
 } from 'mongoose';
 import { ICache, IRepository, PaginationOptions } from './interfaces';
+import { PaginateResponseInterface } from './interfaces/paginate-response.interface';
 
 export default class Repository<T extends Document> implements IRepository<T> {
   constructor(private readonly model: Model<T>) {}
@@ -46,7 +47,7 @@ export default class Repository<T extends Document> implements IRepository<T> {
     projection?: ProjectionType<T> | null,
     options?: QueryOptions<T> | null,
     cache: ICache | undefined = undefined,
-  ): Promise<any> {
+  ): Promise<T> {
     if (cache) {
       return this.model.findById(id, projection, options);
     }
@@ -58,9 +59,9 @@ export default class Repository<T extends Document> implements IRepository<T> {
     projection?: ProjectionType<T> | null,
     options?: PaginationOptions,
     cache: ICache | undefined = undefined,
-  ): Promise<any> {
+  ): Promise<PaginateResponseInterface<T[]>> {
     const { take, page } = options;
-    let results: any;
+    let results: T[];
 
     const skip = (page - 1) * take;
 

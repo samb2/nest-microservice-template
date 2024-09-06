@@ -4,6 +4,7 @@ import { Repository, UpdateResult } from 'typeorm';
 import { User } from './entities';
 import { IUserServiceInterface } from './interfaces/IUserService.interface';
 import { bcryptPassword, comparePassword } from '../utils/password.util';
+import { PayloadInfo } from '../microservice/dto';
 
 @Injectable()
 export class UserService implements IUserServiceInterface {
@@ -44,7 +45,7 @@ export class UserService implements IUserServiceInterface {
     );
   }
 
-  public async updatePassword(id: string, data: any) {
+  public async updatePassword(id: string, data: PayloadInfo) {
     // Find the user by ID and select the password field
     const user: User = await this.userRepository.findOne({
       where: { id },

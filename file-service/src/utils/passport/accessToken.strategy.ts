@@ -6,6 +6,7 @@ import {
   JwtAccessPayload,
   MicroResInterface,
   PatternEnum,
+  RequestWithUser,
 } from '@samb2/nest-microservice';
 import { MicroserviceService } from '../../microservice/microservice.service';
 
@@ -27,7 +28,10 @@ export class AccessTokenStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: any, payload: JwtAccessPayload): Promise<any> {
+  async validate(
+    req: RequestWithUser,
+    payload: JwtAccessPayload,
+  ): Promise<any> {
     const microPayload = {
       authId: payload.authId,
     };
