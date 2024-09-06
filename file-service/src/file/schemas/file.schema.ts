@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema({
   toJSON: {
@@ -30,9 +30,9 @@ export class File extends Document {
   @Prop({ unique: true })
   key: string;
 
-  @Prop({ ref: 'Bucket', type: mongoose.Schema.Types.ObjectId })
+  @Prop({ ref: 'Bucket', type: Types.ObjectId })
   bucket: {
-    type: mongoose.Schema.Types.ObjectId;
+    type: Types.ObjectId;
   };
 
   @Prop()

@@ -50,6 +50,7 @@ import { PaginateResponseInterface } from '../database/interfaces/paginate-respo
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
+  // Post /upload/avatar
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.CREATE_AVATAR)
   @Post('/upload/avatar')
@@ -74,6 +75,7 @@ export class FileController {
     return this.fileService.uploadAvatar(file, req.user);
   }
 
+  // Get /
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_FILE)
   @Get()
@@ -85,6 +87,7 @@ export class FileController {
     return this.fileService.findAll(getFileDto);
   }
 
+  // Get /:id
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.READ_FILE)
   @Get(':id')
@@ -99,6 +102,7 @@ export class FileController {
     return this.fileService.findOne(mongoId);
   }
 
+  // Delete /:id
   @UseGuards(AccessTokenGuard, PermissionGuard)
   @Permissions(PermissionEnum.DELETE_FILE)
   @Delete(':id')
