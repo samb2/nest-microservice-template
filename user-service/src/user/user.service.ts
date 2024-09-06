@@ -11,6 +11,7 @@ import {
   GetUsersQueryDto,
   UpdateUserDto,
   UpdateUserResDto,
+  UserDto,
 } from './dto';
 import { PrismaService } from 'nestjs-prisma';
 import { MicroserviceService } from '../microservice/microservice.service';
@@ -30,7 +31,7 @@ export class UserService {
       getUsersQueryDto;
 
     // Initialize whereConditions object to build the WHERE clause for filtering
-    const whereConditions: any = {
+    const whereConditions: object = {
       ...(is_delete !== undefined ? { is_delete: JSON.parse(is_delete) } : {}),
       ...(is_active !== undefined ? { is_active: JSON.parse(is_active) } : {}),
       ...(admin !== undefined ? { admin: JSON.parse(admin) } : {}),
@@ -41,7 +42,7 @@ export class UserService {
     const orderDirection: string = sort || 'asc';
 
     // Retrieve users and total count based on provided criteria
-    const users = await this.prismaService.users.findMany({
+    const users: UserDto[] = await this.prismaService.users.findMany({
       where: whereConditions,
       select: {
         id: true,
