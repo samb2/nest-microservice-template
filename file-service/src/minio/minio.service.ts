@@ -61,12 +61,9 @@ export class MinioService {
   async createBucketIfNotExist(bucketName: BucketEnum): Promise<boolean> {
     const bucketExist: boolean =
       await this.minioService.bucketExists(bucketName);
-    if (bucketExist) {
-      return bucketExist;
-    }
     if (!bucketExist) {
       await this.minioService.makeBucket(bucketName);
-      return true;
     }
+    return bucketExist;
   }
 }

@@ -12,9 +12,9 @@ export class SeedRolesPermissionsTable1713260435734
 
   constructor() {
     this.redisInstance = new Redis({
-      host: process.env.REDIS_HOST,
-      port: Number(process.env.REDIS_PORT),
-      password: process.env.REDIS_PASSWORD,
+      host: process.env.REDIS_HOST_AUTH,
+      port: Number(process.env.REDIS_PORT_AUTH),
+      password: process.env.REDIS_PASSWORD_AUTH,
     });
 
     this.redisInstance.on('error', (e) => {

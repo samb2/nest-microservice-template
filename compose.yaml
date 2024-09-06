@@ -45,7 +45,7 @@ services:
     networks:
       - file_network
     depends_on:
-      mongo-file:
+      mongo-file2:
         condition: service_healthy
       redis-common:
         condition: service_healthy
@@ -97,10 +97,10 @@ services:
       - auth_network
       - user_network
 
-  mongo-file:
+  mongo-file2:
     image: mongo:7.0
     command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27017" ]
-    container_name: mongo-file
+    container_name: mongo-file2
     ports:
       - "27017:27017"
     extra_hosts:

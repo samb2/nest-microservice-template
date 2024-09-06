@@ -120,7 +120,7 @@ export class RoleService {
   }
 
   async findAll(getRoleDto: GetRoleQueryDto): Promise<GetAllRoleResDto> {
-    const { sort, sortField, take, skip } = getRoleDto;
+    const { sort, sortField, take, skip, page } = getRoleDto;
 
     // Determine sorting parameters
     const orderField: string = sortField || 'id';
@@ -146,10 +146,7 @@ export class RoleService {
     });
 
     // Create page metadata
-    const pageMeta: PageMetaDto = new PageMetaDto({
-      metaData: getRoleDto,
-      itemCount,
-    });
+    const pageMeta: PageMetaDto = new PageMetaDto(page, take, itemCount);
 
     return { roles, pageMeta };
   }

@@ -40,6 +40,8 @@ import {
   UploadFileDto,
   UploadFileResDto,
 } from './dto';
+import { Types } from 'mongoose';
+import { PaginateResponseInterface } from '../database/interfaces/paginate-response.interface';
 
 @ApiTags('files')
 @Controller('files')
@@ -77,7 +79,9 @@ export class FileController {
   @Get()
   @ApiOperation({ summary: 'Find all files' })
   @ApiOkResponseSuccess(UploadFileResDto, 200, true)
-  findAll(@Query() getFileDto?: GetFileQueryDto): Promise<File[]> {
+  findAll(
+    @Query() getFileDto?: GetFileQueryDto,
+  ): Promise<PaginateResponseInterface<File[]>> {
     return this.fileService.findAll(getFileDto);
   }
 
@@ -90,7 +94,9 @@ export class FileController {
   @ApiNotFoundResponse({ description: 'File not found' })
   @UsePipes(new MongoIdValidationPipe())
   async findOne(@Param('id') id: string): Promise<File> {
-    return this.fileService.findOne(id);
+    // convert id to mongoId
+    const mongoId: Types.ObjectId = new Types.ObjectId(id);
+    return this.fileService.findOne(mongoId);
   }
 
   @UseGuards(AccessTokenGuard, PermissionGuard)
@@ -102,6 +108,8 @@ export class FileController {
   @ApiNotFoundResponse({ description: 'File not found' })
   @UsePipes(new MongoIdValidationPipe())
   remove(@Param('id') id: string): Promise<DeleteFileResDto> {
-    return this.fileService.remove(id);
+    // convert id to mongoId
+    const mongoId: Types.ObjectId = new Types.ObjectId(id);
+    return this.fileService.remove(mongoId);
   }
 }

@@ -27,10 +27,10 @@ services:
     networks:
       - backend
 
-  mongo-file:
+  mongo-file2:
     image: mongo:7.0
     command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27017" ]
-    container_name: mongo-file
+    container_name: mongo-file2
     ports:
       - "27017:27017"
     extra_hosts:

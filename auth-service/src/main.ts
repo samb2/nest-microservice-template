@@ -45,16 +45,16 @@ async function bootstrap(): Promise<void> {
   app.enableCors(configService.get<object>('cors.origin'));
 
   app.setGlobalPrefix('/api');
-  if (process.env.NODE_ENV !== 'production') {
-    const options = new DocumentBuilder()
-      .setTitle('AUTH-SERVICE Template')
-      .setDescription('The Authentication & Authorization API')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
-    const document = SwaggerModule.createDocument(app, options);
-    SwaggerModule.setup('api-docs', app, document);
-  }
+  //if (process.env.NODE_ENV !== 'production') {
+  const options = new DocumentBuilder()
+    .setTitle('AUTH-SERVICE Template')
+    .setDescription('The Authentication & Authorization API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('api-docs', app, document);
+  //}
 
   // ┏━━━━━ 🎯 Connect to RabbitMQ Microservice  🎯 ━━━┓
   app.connectMicroservice<MicroserviceOptions>({
