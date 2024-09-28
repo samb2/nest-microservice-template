@@ -175,6 +175,7 @@ export class AuthService implements IAuthServiceInterface {
         authId: user.id,
         roles: roleIds,
       };
+      // refresh
       const refresh_token: string = this.tokenService.generateToken(
         refreshPayload,
         TokenTypeEnum.REFRESH,
