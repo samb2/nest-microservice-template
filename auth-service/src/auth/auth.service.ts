@@ -78,6 +78,17 @@ export class AuthService implements IAuthServiceInterface {
         throw new ConflictException('This user is already registered!');
       }
 
+      // Retrieve the role for the user
+      const role: Role = await roleRep.findOne({
+        where: { name: RoleEnum.USER },
+        select: { id: true },
+      });
+      if (!role) {
+        throw new ForbiddenException(
+            'You can not register Contact Administrator!',
+        );
+      }
+
       // Hash the password
       const hashedPassword: string = await bcryptPassword(password);
 
@@ -86,20 +97,14 @@ export class AuthService implements IAuthServiceInterface {
         email,
         password: hashedPassword,
       });
-      await userRep.save(user);
-
-      // Retrieve the role for the user
-      const role: Role = await roleRep.findOne({
-        where: { name: RoleEnum.USER },
-        select: { id: true },
-      });
 
       // Create and save the usersRoles entity
-      const usersRoles: UsersRoles = usersRolesRep.create({
-        user,
-        role,
-      });
-      await usersRolesRep.save(usersRoles);
+      const usersRoles: UsersRoles = new UsersRoles();
+      usersRoles.user = user;
+      usersRoles.role = role;
+
+      user.userRoles = [usersRoles];
+      await userRep.save(user);
 
       // Send a message to the user service about the new user registration
       const payload: object = {
